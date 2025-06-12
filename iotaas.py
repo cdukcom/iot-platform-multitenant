@@ -1,16 +1,16 @@
 from fastapi import FastAPI
-from pymongo import MongoClient
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from db import tenants_collection  # Importa desde tu archivo db.py
 
 app = FastAPI()
-
-# Conexión a MongoDB Atlas
-client = MongoClient(os.getenv("MONGODB_URI"))
-db = client["iot-platform"]  # Puedes cambiar el nombre de la base
 
 @app.get("/")
 def read_root():
     return {"message": "IoTaaS multitenant backend is running"}
+
+@app.get("/ping-db")
+async def ping_db():
+    try:
+        count = await tenants_collection.count_documents({})
+        return {"status": "ok", "tenants_count": count}
+    except Exception as e:
+        return {"status": "error", "details": str(e)}
