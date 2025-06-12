@@ -1,6 +1,7 @@
-from fastapi import FastAPI
-from db import tenants_collection  # Importa desde tu archivo db.py
+
 import asyncio
+from fastapi import FastAPI
+from db import tenants_collection
 
 app = FastAPI()
 
@@ -16,11 +17,11 @@ async def ping_db():
     except Exception as e:
         return {"status": "error", "details": str(e)}
 
-# 🚀 Mantener viva la app en Railway (evita que el contenedor se apague)
 @app.on_event("startup")
 async def startup_event():
-    asyncio.create_task(dummy_keepalive())
+    # Keep-alive dummy task for Railway
+    async def dummy_keepalive():
+        while True:
+            await asyncio.sleep(60)
 
-async def dummy_keepalive():
-    while True:
-        await asyncio.sleep(3600)
+    asyncio.create_task(dummy_keepalive())
