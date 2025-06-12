@@ -2,8 +2,10 @@
 import asyncio
 from fastapi import FastAPI
 from db import tenants_collection
+from middleware import FirebaseAuthMiddleware
 
 app = FastAPI()
+app.add_middleware(FirebaseAuthMiddleware)
 
 @app.get("/")
 def read_root():
