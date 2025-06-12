@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from db import tenants_collection  # Importa desde tu archivo db.py
+import asyncio
 
 app = FastAPI()
 
