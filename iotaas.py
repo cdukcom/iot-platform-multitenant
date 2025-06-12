@@ -14,3 +14,12 @@ async def ping_db():
         return {"status": "ok", "tenants_count": count}
     except Exception as e:
         return {"status": "error", "details": str(e)}
+
+# 🚀 Mantener viva la app en Railway (evita que el contenedor se apague)
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(dummy_keepalive())
+
+async def dummy_keepalive():
+    while True:
+        await asyncio.sleep(3600)
