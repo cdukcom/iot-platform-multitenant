@@ -4,7 +4,8 @@ from auth import verify_token
 
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.url.path in ["/", "/ping-db"]:
+        # Permitir sin autenticación: rutas públicas o método OPTIONS
+        if request.method == "OPTIONS" or request.url.path in ["/", "/ping-db"]:
             # Permitimos estas rutas sin autenticación
             return await call_next(request)
 
