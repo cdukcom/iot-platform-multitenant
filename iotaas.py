@@ -3,10 +3,21 @@ import asyncio
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from db import tenants_collection
 from middleware import FirebaseAuthMiddleware
 
 app = FastAPI()
+
+# 👇 Añade este bloque para permitir conexión desde localhost
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Permite el frontend en desarrollo
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.add_middleware(FirebaseAuthMiddleware)
 
 @app.get("/")
