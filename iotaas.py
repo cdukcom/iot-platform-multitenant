@@ -6,6 +6,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from db import tenants_collection
 from middleware import FirebaseAuthMiddleware
+from fastapi import Body, HTTPException
+from crud import create_tenant
+from models import TenantModel
 
 app = FastAPI()
 
@@ -48,3 +51,13 @@ async def private(request: Request):
         return JSONResponse(content={"message": "Authenticated", "uid": user.get("uid")})
     return JSONResponse(status_code=401, content={"error": "Unauthorized"})
 
+@app.post("/tenants")
+async def create_tenant_endpoint(data: dict = Body(...), request: Request = None):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Agrega el nuevo tenant con los valores por defecto
+    tenant_data = TenantModel(name=data["name"])
+    tenant_id = await create_tenant(tenant_data)
+    return {"tenant_id": tenant_id}
