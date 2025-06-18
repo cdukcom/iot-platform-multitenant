@@ -15,3 +15,5 @@ db = client["PLATAFORMA_IOT"]  # Asegúrate de usar el nombre correcto de la bas
 tenants_collection = db["tenants"]
 users_collection = db["users"]
 devices_collection = db["devices"]
+alerts_collection = db["alerts"]
+logs_collection = db["logs"]
