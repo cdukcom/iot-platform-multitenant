@@ -10,6 +10,10 @@ async def create_tenant(data: TenantModel, owner_uid: str):
     result = await tenants_collection.insert_one(tenant)
     return str(result.inserted_id)
 
+async def list_devices_by_tenant(tenant_id: str):
+    cursor = devices_collection.find({"tenant_id": tenant_id})
+    return [doc async for doc in cursor]
+
 # ---------- Users ----------
 async def create_user(data: UserModel):
     user = data.dict()

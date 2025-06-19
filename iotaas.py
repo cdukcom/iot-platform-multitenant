@@ -8,7 +8,9 @@ from db import tenants_collection
 from middleware import FirebaseAuthMiddleware
 from fastapi import Body, HTTPException
 from crud import create_tenant
+from crud import register_device, list_devices_by_tenant
 from models import TenantModel
+from models import DeviceModel
 
 app = FastAPI()
 
@@ -80,3 +82,40 @@ async def list_tenants(request: Request):
         })
 
     return {"tenants": tenants}
+
+@app.post("/devices")
+async def register_device_endpoint(data: dict = Body(...), request: Request = None):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    try:
+        device_data = DeviceModel(**data)
+        device_id = await register_device(device_data)
+        return {"device_id": device_id}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno al registrar el dispositivo")
+
+@app.get("/devices/{tenant_id}")
+async def get_devices_for_tenant(tenant_id: str, request: Request):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    devices = await list_devices_by_tenant(tenant_id)
+    return {
+        "devices": [
+            {
+                "id": str(device["_id"]),
+                "name": device["name"],
+                "type": device["type"],
+                "status": device["status"],
+                "location": device.get("location", "N/A"),
+                "created_at": device.get("created_at")
+            }
+            for device in devices
+        ]
+    }
+
