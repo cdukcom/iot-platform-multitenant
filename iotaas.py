@@ -57,10 +57,11 @@ async def create_tenant_endpoint(data: dict = Body(...), request: Request = None
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    # Agrega el nuevo tenant con los valores por defecto
+    # ✅ Agrega el UID correctamente
     tenant_data = TenantModel(name=data["name"])
-    tenant_id = await create_tenant(tenant_data)
+    tenant_id = await create_tenant(tenant_data, owner_uid=user["uid"])
     return {"tenant_id": tenant_id}
+
 
 @app.get("/tenants")
 async def list_tenants(request: Request):
