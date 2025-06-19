@@ -74,7 +74,9 @@ async def list_tenants(request: Request):
     async for doc in cursor:
         tenants.append({
             "id": str(doc["_id"]),
-            "name": doc["name"],
+            "name": doc.get("name", ""),
+            "plan": doc.get("plan", "free"),
+            "created_at": doc.get("created_at", None)
         })
 
     return {"tenants": tenants}
