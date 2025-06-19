@@ -4,8 +4,9 @@ from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 from datetime import datetime
 
 # ---------- Tenants ----------
-async def create_tenant(data: TenantModel):
+async def create_tenant(data: TenantModel, owner_uid: str):
     tenant = data.dict()
+    tenant["owner_uid"] = owner_uid  # ✅ Agregar UID del usuario autenticado
     result = await tenants_collection.insert_one(tenant)
     return str(result.inserted_id)
 
