@@ -61,3 +61,19 @@ async def create_tenant_endpoint(data: dict = Body(...), request: Request = None
     tenant_data = TenantModel(name=data["name"])
     tenant_id = await create_tenant(tenant_data)
     return {"tenant_id": tenant_id}
+
+@app.get("/tenants")
+async def list_tenants(request: Request):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    cursor = tenants_collection.find({"owner_uid": user["uid"]})
+    tenants = []
+    async for doc in cursor:
+        tenants.append({
+            "id": str(doc["_id"]),
+            "name": doc["name"],
+        })
+
+    return {"tenants": tenants}
