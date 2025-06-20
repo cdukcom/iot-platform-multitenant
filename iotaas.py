@@ -156,3 +156,21 @@ async def get_alerts_for_tenant(tenant_id: str, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error al obtener alertas")
 
+@app.put("/alerts/{alert_id}/close")
+async def close_alert(alert_id: str, request: Request):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        from db import alerts_collection
+        result = await alerts_collection.update_one(
+            {"_id": ObjectId(alert_id)},
+            {"$set": {"status": "closed"}}
+        )
+        if result.modified_count == 1:
+            return {"message": "Alerta cerrada exitosamente"}
+        else:
+            raise HTTPException(status_code=404, detail="Alerta no encontrada o ya cerrada")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al cerrar la alerta: {str(e)}")
