@@ -133,3 +133,26 @@ async def create_alert_endpoint(data: dict = Body(...), request: Request = None)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error al crear alerta")
 
+@app.get("/alerts/{tenant_id}")
+async def get_alerts_for_tenant(tenant_id: str, request: Request):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        alerts_cursor = alerts_collection.find({"tenant_id": tenant_id})
+        alerts = []
+        async for alert in alerts_cursor:
+            alerts.append({
+                "id": str(alert["_id"]),
+                "device_id": alert.get("device_id"),
+                "timestamp": alert.get("timestamp"),
+                "status": alert.get("status"),
+                "location": alert.get("location"),
+                "message": alert.get("message"),
+                "assigned_to": alert.get("assigned_to")
+            })
+        return {"alerts": alerts}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error al obtener alertas")
+
