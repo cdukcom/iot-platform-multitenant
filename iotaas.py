@@ -8,9 +8,9 @@ from db import tenants_collection
 from middleware import FirebaseAuthMiddleware
 from fastapi import Body, HTTPException
 from crud import create_tenant
-from crud import register_device, list_devices_by_tenant
+from crud import register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel
-from models import DeviceModel
+from models import DeviceModel, AlertModel
 
 app = FastAPI()
 
@@ -118,4 +118,18 @@ async def get_devices_for_tenant(tenant_id: str, request: Request):
             for device in devices
         ]
     }
+
+@app.post("/alerts")
+async def create_alert_endpoint(data: dict = Body(...), request: Request = None):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        alert_data = AlertModel(**data)
+        from db import alerts_collection
+        alert_id = await trigger_alert(alert_data, alerts_collection)
+        return {"alert_id": alert_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error al crear alerta")
 
