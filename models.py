@@ -21,8 +21,9 @@ class UserModel(BaseModel):
 # ---------- Dispositivo (MG6 o LBM01, registrados por QR o manual) ----------
 class DeviceModel(BaseModel):
     tenant_id: str
-    name: str
-    type: Literal["gateway", "panic_button"]
+    dev_eui: str  # ➕ Este es el identificador único que usas desde el QR
+    name: Optional[str] = "Sin nombre"  # puedes asignar uno más adelante
+    type: Literal["gateway", "panic_button"] = "gateway"
     status: Literal["active", "inactive"] = "active"
     location: Optional[str]
     created_at: datetime = Field(default_factory=datetime.utcnow)
