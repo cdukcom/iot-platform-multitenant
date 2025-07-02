@@ -109,11 +109,13 @@ async def get_devices_for_tenant(tenant_id: str, request: Request):
         "devices": [
             {
                 "id": str(device["_id"]),
+                "dev_eui": device.get("dev_eui", ""),
                 "name": device["name"],
                 "type": device["type"],
                 "status": device["status"],
                 "location": device.get("location", "N/A"),
                 "created_at": device.get("created_at")
+                "gateway_id": device.get("gateway_id")
             }
             for device in devices
         ]
