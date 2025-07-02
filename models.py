@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, root_validator
 from typing import Optional, Literal, Dict
 from datetime import datetime
 
@@ -21,12 +21,19 @@ class UserModel(BaseModel):
 # ---------- Dispositivo (MG6 o LBM01, registrados por QR o manual) ----------
 class DeviceModel(BaseModel):
     tenant_id: str
-    dev_eui: str  # ➕ Este es el identificador único que usas desde el QR
-    name: Optional[str] = "Sin nombre"  # puedes asignar uno más adelante
+    dev_eui: str
+    name: Optional[str] = "Sin nombre"
     type: Literal["gateway", "panic_button"] = "gateway"
     status: Literal["active", "inactive"] = "active"
     location: Optional[str]
+    gateway_id: Optional[str] = None  # ➕ ID del gateway asociado (solo para botones)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @root_validator(pre=True)
+    def check_gateway_requirement(cls, values):
+        if values.get("type") == "panic_button" and not values.get("gateway_id"):
+            raise ValueError("Los botones de pánico deben estar asociados a un gateway (gateway_id).")
+        return values
 
 
 # ---------- Alerta generada por botón de pánico ----------
