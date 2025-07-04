@@ -91,13 +91,17 @@ async def register_device_endpoint(data: dict = Body(...), request: Request = No
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
     
+    print("📥 Datos recibidos en /devices:", data)  
+    
     try:
         device_data = DeviceModel(**data)
         device_id = await register_device(device_data)
         return {"device_id": device_id}
     except ValueError as ve:
+        print("❌ ValueError:", str(ve))
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
+        print("❌ Error general:", str(e))
         raise HTTPException(status_code=500, detail="Error interno al registrar el dispositivo")
 
 @app.get("/devices/{tenant_id}")
