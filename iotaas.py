@@ -6,6 +6,7 @@ from fastapi import Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from db import tenants_collection
+from bson import ObjectId
 from middleware import FirebaseAuthMiddleware
 from fastapi import Body, HTTPException
 from crud import create_tenant
