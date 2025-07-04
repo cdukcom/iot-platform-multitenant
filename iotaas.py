@@ -2,6 +2,7 @@
 import asyncio
 from fastapi import FastAPI
 from fastapi import Request
+from fastapi import Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from db import tenants_collection
@@ -120,6 +121,26 @@ async def get_devices_for_tenant(tenant_id: str, request: Request):
             for device in devices
         ]
     }
+
+@app.delete("/devices/{device_id}")
+async def delete_device(device_id: str, confirm: bool = Query(False), request: Request = None):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    if not confirm:
+        raise HTTPException(status_code=400, detail="Falta confirmación para eliminar el dispositivo.")
+
+    try:
+        from db import devices_collection
+        result = await devices_collection.delete_one({"_id": ObjectId(device_id)})
+        if result.deleted_count == 1:
+            return {"message": "Dispositivo eliminado correctamente"}
+        else:
+            raise HTTPException(status_code=404, detail="Dispositivo no encontrado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar dispositivo: {str(e)}")
+
 
 @app.post("/alerts")
 async def create_alert_endpoint(data: dict = Body(...), request: Request = None):
