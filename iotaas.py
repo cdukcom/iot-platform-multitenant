@@ -117,7 +117,7 @@ async def get_devices_for_tenant(tenant_id: str, request: Request):
                 "status": device["status"],
                 "location": device.get("location", "N/A"),
                 "created_at": device.get("created_at"),
-                "gateway_id": device.get("gateway_id")
+                "gateway_id": str(device.get("gateway_id")) if device.get("gateway_id") else None
             }
             for device in devices
         ]

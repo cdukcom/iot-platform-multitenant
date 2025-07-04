@@ -26,6 +26,10 @@ async def get_user_by_uid(uid: str):
 # ---------- Devices ----------
 async def register_device(data: DeviceModel):
     device = data.dict()
+
+    # Convertir gateway_id a ObjectId si está presente
+    if "gateway_id" in device and device["gateway_id"]:
+        device["gateway_id"] = ObjectId(device["gateway_id"])
     
     # Contar cuántos dispositivos tiene este tenant
     device_count = await devices_collection.count_documents({"tenant_id": device["tenant_id"]})
