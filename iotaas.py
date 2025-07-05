@@ -114,6 +114,7 @@ async def get_devices_for_tenant(tenant_id: str, request: Request):
     return {
         "devices": [
             {
+                "_id": str(device["_id"]),
                 "id": str(device["_id"]),
                 "dev_eui": device.get("dev_eui", ""),
                 "name": device["name"],
