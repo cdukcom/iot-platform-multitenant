@@ -1,22 +1,28 @@
 
 import asyncio
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi import Request
 from fastapi import Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Body, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 from db import tenants_collection
 from bson import ObjectId
 from middleware import FirebaseAuthMiddleware
-from fastapi import Body, HTTPException
 from crud import create_tenant
 from crud import register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel
 from models import DeviceModel, AlertModel
 
+load_dotenv()
+
 app = FastAPI()
 
-# 👇 Añade este bloque para permitir conexión desde localhost
+# Permitir CORS para el frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],  # Permite el frontend en desarrollo
@@ -147,6 +153,21 @@ async def delete_device(device_id: str, confirm: bool = Query(False), request: R
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al eliminar dispositivo: {str(e)}")
 
+
+@app.get("/devices/{dev_eui}/data")
+def get_device_data(dev_eui: str):
+    data = list(db["mqtt_data"].find({"device_eui": dev_eui}))
+    
+    if not data:
+        raise HTTPException(status_code=404, detail="No se encontraron datos para este dispositivo.")
+
+    # Convertir ObjectId y timestamp a string legibles
+    for d in data:
+        d["_id"] = str(d["_id"])
+        if "timestamp" in d:
+            d["timestamp"] = str(d["timestamp"])
+
+    return {"device_eui": dev_eui, "data": data}
 
 @app.post("/alerts")
 async def create_alert_endpoint(data: dict = Body(...), request: Request = None):

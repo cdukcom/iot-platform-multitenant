@@ -30,10 +30,23 @@ async def mqtt_handler():
             
                 try:
                     payload = json.loads(message.payload.decode())
+                    
+                    # Validar que existe device_eui
+                    device_eui = payload.get("device_eui")
+                    if not device_eui:
+                        print("⚠️  Mensaje sin device_eui, ignorado.")
+                        return
 
+                    # Verificar si el device_eui está registrado
+                    device = db["devices"].find_one({"dev_eui": device_eui})
+                    if not device:
+                        print(f"⚠️  Dispositivo no registrado: {device_eui}, mensaje ignorado.")
+                        return
+
+                    # Agregar campos adicionales
                     if "timestamp" not in payload:
                         payload["timestamp"] = datetime.now(timezone.utc).isoformat()
-
+                    
                     payload["topic"] = str(message.topic)
                     collection.insert_one(payload)
                     print("🟢 Mensaje guardado en MongoDB.")

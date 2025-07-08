@@ -4,13 +4,11 @@ import os
 import json
 
 if not firebase_admin._apps:
-    # Lee el contenido del JSON desde la variable de entorno
-    json_cred = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    if not json_cred:
-        raise Exception("GOOGLE_APPLICATION_CREDENTIALS_JSON not set")
+    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if not credentials_path:
+        raise Exception("GOOGLE_APPLICATION_CREDENTIALS not set")
 
-    cred_dict = json.loads(json_cred)
-    cred = credentials.Certificate(cred_dict)
+    cred = credentials.Certificate(credentials_path)
     firebase_admin.initialize_app(cred)
 
 def verify_token(id_token: str):
