@@ -35,13 +35,13 @@ async def mqtt_handler():
                     device_eui = payload.get("device_eui")
                     if not device_eui:
                         print("⚠️  Mensaje sin device_eui, ignorado.")
-                        return
+                        continue
 
                     # Verificar si el device_eui está registrado
                     device = db["devices"].find_one({"dev_eui": device_eui})
                     if not device:
                         print(f"⚠️  Dispositivo no registrado: {device_eui}, mensaje ignorado.")
-                        return
+                        continue
 
                     # Agregar campos adicionales
                     if "timestamp" not in payload:
