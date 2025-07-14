@@ -17,6 +17,8 @@ from crud import create_tenant
 from crud import register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel
 from models import DeviceModel, AlertModel
+from chirpstack_api import get_devices
+from fastapi import APIRouter
 
 load_dotenv()
 
@@ -224,3 +226,11 @@ async def close_alert(alert_id: str, request: Request):
             raise HTTPException(status_code=404, detail="Alerta no encontrada o ya cerrada")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al cerrar la alerta: {str(e)}")
+
+test_router = APIRouter()
+
+@test_router.get("/chirpstack/devices")
+def list_devices_from_chirpstack():
+    return get_devices()
+
+app.include_router(test_router)
