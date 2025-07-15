@@ -1,40 +1,57 @@
 
 import asyncio
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi import Request
-from fastapi import Query
+import os
+import logging
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, Body, Query, Depends, HTTPException, APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Body, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pymongo import MongoClient
-from dotenv import load_dotenv
-import os
-from db import tenants_collection
 from bson import ObjectId
-from middleware import FirebaseAuthMiddleware
-from crud import create_tenant
-from crud import register_device, list_devices_by_tenant, trigger_alert
-from models import TenantModel
-from models import DeviceModel, AlertModel
-from chirpstack_api import get_devices
-from fastapi import APIRouter
+from pymongo import MongoClient
 
+# 📦 Módulos locales
+from db import tenants_collection
+from db import devicekeys_collection
+from middleware import FirebaseAuthMiddleware
+from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
+from models import TenantModel, DeviceModel, AlertModel
+from chirpstack_api import get_devices
+
+# 🔧 Cargar configuración
 load_dotenv()
 
+# 📝 Logging (desactivado por defecto, activar cuando se necesite)
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
+# logger.info("🌐 Iniciando servicio iotaas.py...")
+
+# 🌀 Lifespan: equivalente a @app.on_event("startup")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Keep-alive dummy task for Railway
+    async def dummy_keepalive():
+        while True:
+            await asyncio.sleep(60)
+    asyncio.create_task(dummy_keepalive())
+    yield  # Aquí continúa el ciclo de vida normal de FastAPI
+
+# 🚀 Inicializar la aplicación
 app = FastAPI()
 
-# Permitir CORS para el frontend
+# 🌐 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Permite el frontend en desarrollo
+    allow_origins=["http://localhost:5173"],  # Ajustar en producción
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# 🔐 Middleware de autenticación
 app.add_middleware(FirebaseAuthMiddleware)
 
+# 🧪 Rutas públicas de prueba
 @app.get("/")
 def read_root():
     return {"message": "IoTaaS multitenant backend is running"}
@@ -47,29 +64,20 @@ async def ping_db():
     except Exception as e:
         return {"status": "error", "details": str(e)}
 
-@app.on_event("startup")
-async def startup_event():
-    # Keep-alive dummy task for Railway
-    async def dummy_keepalive():
-        while True:
-            await asyncio.sleep(60)
-
-    asyncio.create_task(dummy_keepalive())
-
+# 🔒 Rutas protegidas (Autenticadas)
 @app.get("/private")
 async def private(request: Request):
     user = request.state.user
     if user:
         return JSONResponse(content={"message": "Authenticated", "uid": user.get("uid")})
-    return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+    return HTTPException(status_code=401, content={"error": "Unauthorized"})
 
+# 🧱 Gestión de Tenants
 @app.post("/tenants")
 async def create_tenant_endpoint(data: dict = Body(...), request: Request = None):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-    # ✅ Agrega el UID correctamente
     tenant_data = TenantModel(name=data["name"])
     tenant_id = await create_tenant(tenant_data, owner_uid=user["uid"])
     return {"tenant_id": tenant_id}
@@ -80,7 +88,6 @@ async def list_tenants(request: Request):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
     cursor = tenants_collection.find({"owner_uid": user["uid"]})
     tenants = []
     async for doc in cursor:
@@ -90,17 +97,14 @@ async def list_tenants(request: Request):
             "plan": doc.get("plan", "free"),
             "created_at": doc.get("created_at", None)
         })
-
     return {"tenants": tenants}
 
+# 📡 Gestión de Dispositivos
 @app.post("/devices")
 async def register_device_endpoint(data: dict = Body(...), request: Request = None):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    
-    print("📥 Datos recibidos en /devices:", data)  
-    
     try:
         device_data = DeviceModel(**data)
         device_id = await register_device(device_data)
@@ -117,7 +121,6 @@ async def get_devices_for_tenant(tenant_id: str, request: Request):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
     devices = await list_devices_by_tenant(tenant_id)
     return {
         "devices": [
@@ -144,93 +147,89 @@ async def delete_device(device_id: str, confirm: bool = Query(False), request: R
 
     if not confirm:
         raise HTTPException(status_code=400, detail="Falta confirmación para eliminar el dispositivo.")
-
-    try:
-        from db import devices_collection
-        result = await devices_collection.delete_one({"_id": ObjectId(device_id)})
-        if result.deleted_count == 1:
-            return {"message": "Dispositivo eliminado correctamente"}
-        else:
-            raise HTTPException(status_code=404, detail="Dispositivo no encontrado")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al eliminar dispositivo: {str(e)}")
-
+    from db import devices_collection
+    result = await devices_collection.delete_one({"_id": ObjectId(device_id)})
+    if result.deleted_count == 1:
+        return {"message": "Dispositivo eliminado correctamente"}
+    raise HTTPException(status_code=404, detail="Dispositivo no encontrado")
 
 @app.get("/devices/{dev_eui}/data")
 def get_device_data(dev_eui: str):
+    db = MongoClient(os.getenv("MONGODB_URI"))["PLATAFORMA_IOT"]
     data = list(db["mqtt_data"].find({"device_eui": dev_eui}))
-    
     if not data:
         raise HTTPException(status_code=404, detail="No se encontraron datos para este dispositivo.")
-
-    # Convertir ObjectId y timestamp a string legibles
     for d in data:
         d["_id"] = str(d["_id"])
         if "timestamp" in d:
             d["timestamp"] = str(d["timestamp"])
-
     return {"device_eui": dev_eui, "data": data}
 
+@app.post("/device-keys")
+async def save_device_key(data: dict = Body(...), request: Request = None):
+    """
+    Permite guardar una AppKey para un tipo de dispositivo (por ejemplo, MG6 o LBM01).
+    Esta clave luego se usará automáticamente al registrar un dispositivo de ese tipo.
+    """
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    device_type = data.get("type")
+    app_key = data.get("app_key")
+
+    if not device_type or not app_key:
+        raise HTTPException(status_code=400, detail="Faltan campos obligatorios")
+
+    result = await devicekeys_collection.update_one(
+        {"type": device_type},
+        {"$set": {"app_key": app_key}},
+        upsert=True
+    )
+
+    return {"message": "Clave OTAA guardada correctamente", "matched": result.matched_count}
+
+# 🚨 Gestión de Alertas
 @app.post("/alerts")
 async def create_alert_endpoint(data: dict = Body(...), request: Request = None):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-    try:
-        alert_data = AlertModel(**data)
-        from db import alerts_collection
-        alert_id = await trigger_alert(alert_data, alerts_collection)
-        return {"alert_id": alert_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Error al crear alerta")
+    alert_data = AlertModel(**data)
+    from db import alerts_collection
+    alert_id = await trigger_alert(alert_data, alerts_collection)
+    return {"alert_id": alert_id}
 
 @app.get("/alerts/{tenant_id}")
 async def get_alerts_for_tenant(tenant_id: str, request: Request):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-    try:
-        alerts_cursor = alerts_collection.find({"tenant_id": tenant_id})
-        alerts = []
-        async for alert in alerts_cursor:
-            alerts.append({
-                "id": str(alert["_id"]),
-                "device_id": alert.get("device_id"),
-                "timestamp": alert.get("timestamp"),
-                "status": alert.get("status"),
-                "location": alert.get("location"),
-                "message": alert.get("message"),
-                "assigned_to": alert.get("assigned_to")
-            })
-        return {"alerts": alerts}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Error al obtener alertas")
+    from db import alerts_collection
+    alerts_cursor = alerts_collection.find({"tenant_id": tenant_id})
+    alerts = []
+    async for alert in alerts_cursor:
+        alerts.append({
+            "id": str(alert["_id"]),
+            "device_id": alert.get("device_id"),
+            "timestamp": alert.get("timestamp"),
+            "status": alert.get("status"),
+            "location": alert.get("location"),
+            "message": alert.get("message"),
+            "assigned_to": alert.get("assigned_to")
+        })
+    return {"alerts": alerts}
 
 @app.put("/alerts/{alert_id}/close")
 async def close_alert(alert_id: str, request: Request):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-    try:
-        from db import alerts_collection
-        result = await alerts_collection.update_one(
-            {"_id": ObjectId(alert_id)},
-            {"$set": {"status": "closed"}}
-        )
-        if result.modified_count == 1:
-            return {"message": "Alerta cerrada exitosamente"}
-        else:
-            raise HTTPException(status_code=404, detail="Alerta no encontrada o ya cerrada")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al cerrar la alerta: {str(e)}")
-
-test_router = APIRouter()
-
-@test_router.get("/chirpstack/devices")
-def list_devices_from_chirpstack():
-    return get_devices()
-
-app.include_router(test_router)
+    from db import alerts_collection
+    result = await alerts_collection.update_one(
+        {"_id": ObjectId(alert_id)},
+        {"$set": {"status": "closed"}}
+    )
+    if result.modified_count == 1:
+        return {"message": "Alerta cerrada exitosamente"}
+    raise HTTPException(status_code=404, detail="Alerta no encontrada o ya cerrada")
