@@ -54,7 +54,9 @@ async def register_device(data: DeviceModel):
         device_type = device["type"]
 
         # a. Obtener Device Profile ID desde ChirpStack según tipo (ej. MG6, LBM01)
-        profile_id = get_device_profile_by_name(device_type)
+        #profile_id = get_device_profile_by_name(device_type)
+        tenant_chirpstack_id = tenant.get("chirpstack_tenant_id")
+        profile_id = get_device_profile_by_name(device_type, tenant_chirpstack_id)
         if not profile_id:
             raise ValueError(f"Device profile no encontrado en ChirpStack para: {device_type}")
 
