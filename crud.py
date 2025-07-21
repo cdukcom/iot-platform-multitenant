@@ -80,10 +80,10 @@ async def register_device(data: DeviceModel):
 
     except Exception as e:
         print("⚠️ Error al sincronizar con ChirpStack:", str(e))
-        # Aquí podrías eliminar el documento de Mongo si falló
+        import traceback
+        traceback.print_exc()  # 👈 Esto imprimirá detalles del error exacto
         await devices_collection.delete_one({"_id": ObjectId(device_id)})
         raise ValueError("Fallo la integración con ChirpStack. Dispositivo no creado.")
-
     return device_id
 
 async def list_devices_by_tenant(tenant_id: str):
