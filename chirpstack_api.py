@@ -5,14 +5,14 @@ import os
 
 # 🌐 Configuración de la API de ChirpStack
 CHIRPSTACK_API_URL = os.getenv("CHIRPSTACK_API_URL", "http://lorawan.duke-villa.com:8080/api")
-CHIRPSTACK_API_KEY = os.getenv("CHIRPSTACK_API_KEY")  # Lo pondrás en .env
+CHIRPSTACK_API_KEY = os.getenv("CHIRPSTACK_API_KEY")  # Se usa desde variables de entorno Railway
 
 HEADERS = {
     "Grpc-Metadata-Authorization": f"Bearer {CHIRPSTACK_API_KEY}",
     "Content-Type": "application/json"
 }
 
-# 🔍 Obtener lista de dispositivos registrados en ChirpStack
+# 🔍 Obtener lista de dispositivos registrados en ChirpStack (global)
 def get_devices():
     url = f"{CHIRPSTACK_API_URL}/devices"
     response = requests.get(url, headers=HEADERS)
@@ -22,23 +22,41 @@ def get_devices():
         print(f"[ERROR] {response.status_code}: {response.text}")
         return []
 
-# 🔍 Obtener lista de device-profiles disponibles
-def get_device_profiles():
-    url = f"{CHIRPSTACK_API_URL}/device-profiles"
+# 🔍 Obtener lista de device-profiles de un tenant específico
+def get_device_profiles(tenant_id):
+    url = f"{CHIRPSTACK_API_URL}/device-profiles?tenant_id={tenant_id}"
     response = requests.get(url, headers=HEADERS)
     if response.status_code == 200:
         return response.json().get("result", [])
     print(f"[ERROR get_device_profiles] {response.status_code}: {response.text}")
     return []
 
-# 📎 Obtener un device-profile por nombre (por ejemplo, “MG6”)
-def get_device_profile_by_name(name):
-    profiles = get_device_profiles()
+# 📎 Obtener un device-profile por nombre y tenant
+def get_device_profile_by_name(name, tenant_id):
+    profiles = get_device_profiles(tenant_id)
     for profile in profiles:
         if profile.get("name") == name:
             return profile.get("id")
-    print(f"[WARN] No se encontró device-profile con nombre: {name}")
+    print(f"[WARN] No se encontró device-profile con nombre: {name} en tenant: {tenant_id}")
     return None
+
+# 🔍 Obtener lista de device-profiles disponibles
+#def get_device_profiles():
+#    url = f"{CHIRPSTACK_API_URL}/device-profiles"
+#    response = requests.get(url, headers=HEADERS)
+#    if response.status_code == 200:
+#        return response.json().get("result", [])
+#    print(f"[ERROR get_device_profiles] {response.status_code}: {response.text}")
+#    return []
+
+# 📎 Obtener un device-profile por nombre (por ejemplo, “MG6”)
+#def get_device_profile_by_name(name):
+#    profiles = get_device_profiles()
+#    for profile in profiles:
+#        if profile.get("name") == name:
+#            return profile.get("id")
+#    print(f"[WARN] No se encontró device-profile con nombre: {name}")
+#    return None
 
 # 📦 Crear una nueva aplicación en ChirpStack
 def create_application(app_name, tenant_id="00000000-0000-0000-0000-000000000000"):
