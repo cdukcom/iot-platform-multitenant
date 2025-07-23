@@ -16,7 +16,6 @@ from db import devicekeys_collection
 from middleware import FirebaseAuthMiddleware
 from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel, DeviceModel, AlertModel
-from chirpstack_api import get_devices
 
 # 🔧 Cargar configuración
 load_dotenv()
