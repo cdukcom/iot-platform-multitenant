@@ -7,7 +7,6 @@ from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 # 🔗 Importar API de ChirpStack
 from chirpstack_api import (
     get_device_profile_by_name,
-    create_application,
     create_device,
     set_device_keys,
 )
