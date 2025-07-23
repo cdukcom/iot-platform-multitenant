@@ -4,7 +4,7 @@ import requests
 import os
 
 # 🌐 Configuración de la API de ChirpStack
-CHIRPSTACK_API_URL = os.getenv("CHIRPSTACK_API_URL", "http://lorawan.duke-villa.com:8080/api")
+CHIRPSTACK_API_URL = os.getenv("CHIRPSTACK_API_URL", "http://lorawan.duke-villa.com:8090")
 CHIRPSTACK_API_KEY = os.getenv("CHIRPSTACK_API_KEY")  # Se usa desde variables de entorno Railway
 
 HEADERS = {
@@ -40,23 +40,6 @@ def get_device_profile_by_name(name, tenant_id):
     print(f"[WARN] No se encontró device-profile con nombre: {name} en tenant: {tenant_id}")
     return None
 
-# 🔍 Obtener lista de device-profiles disponibles
-#def get_device_profiles():
-#    url = f"{CHIRPSTACK_API_URL}/device-profiles"
-#    response = requests.get(url, headers=HEADERS)
-#    if response.status_code == 200:
-#        return response.json().get("result", [])
-#    print(f"[ERROR get_device_profiles] {response.status_code}: {response.text}")
-#    return []
-
-# 📎 Obtener un device-profile por nombre (por ejemplo, “MG6”)
-#def get_device_profile_by_name(name):
-#    profiles = get_device_profiles()
-#    for profile in profiles:
-#        if profile.get("name") == name:
-#            return profile.get("id")
-#    print(f"[WARN] No se encontró device-profile con nombre: {name}")
-#    return None
 
 # 📦 Crear una nueva aplicación en ChirpStack
 def create_application(app_name, tenant_id="00000000-0000-0000-0000-000000000000"):
