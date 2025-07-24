@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package chirpstack.api;
+
+service DeviceService {
+  rpc Get (GetDeviceRequest) returns (GetDeviceResponse);
+  rpc Create (CreateDeviceRequest) returns (CreateDeviceResponse);
+  rpc Delete (DeleteDeviceRequest) returns (DeleteDeviceResponse);
+}
+
+message GetDeviceRequest {
+  string dev_eui = 1;
+}
+
+message GetDeviceResponse {
+  string dev_eui = 1;
+  string name = 2;
+  string description = 3;
+  string application_id = 4;
+  string device_profile_id = 5;
+}
+
+message CreateDeviceRequest {
+  string dev_eui = 1;
+  string name = 2;
+  string description = 3;
+  string application_id = 4;
+  string device_profile_id = 5;
+}
+
+message CreateDeviceResponse {}
+
+message DeleteDeviceRequest {
+  string dev_eui = 1;
+}
+
+message DeleteDeviceResponse {}

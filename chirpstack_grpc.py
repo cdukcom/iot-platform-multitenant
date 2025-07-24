@@ -1,0 +1,31 @@
+import grpc
+import os
+from grpc.chirpstack_api import device_pb2, device_pb2_grpc
+
+CHIRPSTACK_GRPC_ADDRESS = os.getenv("CHIRPSTACK_GRPC_ADDRESS", "localhost:8080")
+CHIRPSTACK_API_TOKEN = os.getenv("CHIRPSTACK_API_TOKEN", "")
+
+class ChirpstackGRPCClient:
+    def __init__(self):
+        self.channel = grpc.insecure_channel(CHIRPSTACK_GRPC_ADDRESS)
+        self.device_stub = device_pb2_grpc.DeviceServiceStub(self.channel)
+
+        self.metadata = [("authorization", f"Bearer {CHIRPSTACK_API_TOKEN}")]
+
+    def get_device(self, dev_eui: str):
+        request = device_pb2.GetDeviceRequest(dev_eui=dev_eui)
+        return self.device_stub.Get(request, metadata=self.metadata)
+
+    def create_device(self, dev_eui, name, description, application_id, device_profile_id):
+        request = device_pb2.CreateDeviceRequest(
+            dev_eui=dev_eui,
+            name=name,
+            description=description,
+            application_id=application_id,
+            device_profile_id=device_profile_id,
+        )
+        return self.device_stub.Create(request, metadata=self.metadata)
+
+    def delete_device(self, dev_eui: str):
+        request = device_pb2.DeleteDeviceRequest(dev_eui=dev_eui)
+        return self.device_stub.Delete(request, metadata=self.metadata)

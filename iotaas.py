@@ -16,6 +16,7 @@ from db import devicekeys_collection
 from middleware import FirebaseAuthMiddleware
 from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel, DeviceModel, AlertModel
+from chirpstack_grpc import ChirpstackGRPCClient
 
 # 🔧 Cargar configuración
 load_dotenv()
@@ -187,6 +188,46 @@ async def save_device_key(data: dict = Body(...), request: Request = None):
     )
 
     return {"message": "Clave OTAA guardada correctamente", "matched": result.matched_count}
+
+@app.get("/grpc/device/{dev_eui}")
+async def grpc_get_device(dev_eui: str):
+    try:
+        client = ChirpstackGRPCClient()
+        device = client.get_device(dev_eui)
+        return {
+            "dev_eui": device.dev_eui,
+            "name": device.name,
+            "description": device.description,
+            "application_id": device.application_id,
+            "device_profile_id": device.device_profile_id,
+        }
+    except grpc.RpcError as e:
+        raise HTTPException(status_code=400, detail=f"gRPC Error: {e.details()}")
+
+@app.post("/grpc/device/")
+async def grpc_create_device(payload: dict):
+    try:
+        client = ChirpstackGRPCClient()
+        client.create_device(
+            dev_eui=payload["dev_eui"],
+            name=payload["name"],
+            description=payload.get("description", ""),
+            application_id=payload["application_id"],
+            device_profile_id=payload["device_profile_id"],
+        )
+        return {"message": "Device created via gRPC"}
+    except grpc.RpcError as e:
+        raise HTTPException(status_code=400, detail=f"gRPC Error: {e.details()}")
+
+@app.delete("/grpc/device/{dev_eui}")
+async def grpc_delete_device(dev_eui: str):
+    try:
+        client = ChirpstackGRPCClient()
+        client.delete_device(dev_eui)
+        return {"message": "Device deleted via gRPC"}
+    except grpc.RpcError as e:
+        raise HTTPException(status_code=400, detail=f"gRPC Error: {e.details()}")
+
 
 # 🚨 Gestión de Alertas
 @app.post("/alerts")
