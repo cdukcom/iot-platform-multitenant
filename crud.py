@@ -5,7 +5,7 @@ from db import tenants_collection, users_collection, devices_collection, devicek
 from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 
 # 🔗 Importar API de ChirpStack
-from chirpstack_api import (
+from chirpstack_api_com import (
     get_device_profile_by_name,
 )
 
