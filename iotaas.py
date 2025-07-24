@@ -18,18 +18,6 @@ from crud import create_tenant, register_device, list_devices_by_tenant, trigger
 from models import TenantModel, DeviceModel, AlertModel
 from chirpstack_grpc import ChirpstackGRPCClient
 
-print("🧪 iotaas.py iniciado")
-
-# Prueba de importación directa
-import grpc
-print("✅ grpc importado")
-
-from grpc.chirpstack_api import device_pb2
-print("✅ grpc.chirpstack_api.device_pb2 importado correctamente")
-
-from grpc.chirpstack_api import device_pb2_grpc
-print("✅ grpc.chirpstack_api.device_pb2_grpc importado correctamente")
-
 # 🔧 Cargar configuración
 load_dotenv()
 
