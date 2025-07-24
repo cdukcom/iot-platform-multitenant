@@ -29,3 +29,11 @@ class ChirpstackGRPCClient:
     def delete_device(self, dev_eui: str):
         request = device_pb2.DeleteDeviceRequest(dev_eui=dev_eui)
         return self.device_stub.Delete(request, metadata=self.metadata)
+    
+    def get_device_profile_id_by_name(self, profile_name: str, tenant_id: str) -> str:
+        request = service.ListDeviceProfilesRequest(limit=50, tenant_id=tenant_id)
+        response = self.device_profile_stub.List(request)
+        for profile in response.result:
+            if profile.name == profile_name:
+                return profile.id
+        raise ValueError(f"Perfil de dispositivo '{profile_name}' no encontrado para tenant {tenant_id}")

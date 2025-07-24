@@ -5,11 +5,9 @@ from datetime import datetime
 from db import tenants_collection, users_collection, devices_collection, devicekeys_collection
 from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 
-# from chirpstack_api_com import get_device_profile_by_name, create_device, set_device_keys  # 🔙 REST API backup
+# from chirpstack_gprc import client.get_device_profile_id_by_name
 from chirpstack_grpc import ChirpstackGRPCClient
-from chirpstack_api_com import (
-    get_device_profile_by_name,
-)
+
 
 # ────────────────────────────────────────────────
 # 🧱 BLOQUE: TENANTS
@@ -56,13 +54,13 @@ async def register_device(data: DeviceModel):
         application_id = tenant.get("chirpstack_app_id") or "1"
         tenant_chirpstack_id = tenant.get("chirpstack_tenant_id")
 
-        # a. Obtener Device Profile ID (por REST temporalmente — no hay gRPC directo aún)
-        from chirpstack_api_com import get_device_profile_by_name
-        profile_id = get_device_profile_by_name(device_type, tenant_chirpstack_id)
-        if not profile_id:
-            raise ValueError(f"Device profile no encontrado en ChirpStack para: {device_type}")
+        # a. Crear cliente gRPC
+        client = ChirpstackGRPCClient()
 
-        # b. Crear dispositivo vía gRPC
+        # b. Obtener Device Profile ID (por gRPC)
+        profile_id = client.get_device_profile_id_by_name(device_type, tenant_chirpstack_id)
+
+        # c. Crear dispositivo vía gRPC
         client = ChirpstackGRPCClient()
         client.create_device(
             dev_eui=dev_eui,
@@ -72,13 +70,13 @@ async def register_device(data: DeviceModel):
             device_profile_id=profile_id,
         )
 
-        # c. Obtener AppKey desde Mongo
+        # d. Obtener AppKey desde Mongo
         key_doc = await devicekeys_collection.find_one({"type": device_type})
         app_key = key_doc["app_key"] if key_doc else "00000000000000000000000000000000"
 
-        # d. Asignar claves OTAA (solo posible vía REST de momento)
-        from chirpstack_api_com import set_device_keys
-        set_device_keys(dev_eui, app_key)
+        # e. Asignar claves OTAA (solo posible vía REST de momento)
+        #from chirpstack_api_com import set_device_keys
+        #set_device_keys(dev_eui, app_key)
 
     except Exception as e:
         print("⚠️ Error al sincronizar con ChirpStack:", str(e))
