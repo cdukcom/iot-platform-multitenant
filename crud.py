@@ -1,10 +1,12 @@
-from bson import ObjectId
-from datetime import datetime
+# 🔄 AVISO: Este archivo usa gRPC como vía principal para ChirpStack.
+# Métodos REST solo se usan para funciones aún no migradas a gRPC (ej. AppKey, profiles).from bson import ObjectId
 
+from datetime import datetime
 from db import tenants_collection, users_collection, devices_collection, devicekeys_collection
 from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 
-# 🔗 Importar API de ChirpStack
+# from chirpstack_api_com import get_device_profile_by_name, create_device, set_device_keys  # 🔙 REST API backup
+from chirpstack_grpc import ChirpstackGRPCClient
 from chirpstack_api_com import (
     get_device_profile_by_name,
 )
@@ -43,44 +45,48 @@ async def register_device(data: DeviceModel):
     # 1️⃣ Registrar en MongoDB
     result = await devices_collection.insert_one(device)
     device_id = str(result.inserted_id)
-
-    # 2️⃣ Crear en ChirpStack
+    
+    # 2️⃣ Intentar sincronización con ChirpStack vía gRPC
     try:
         dev_eui = device["dev_eui"]
         name = device["name"]
+        description = device.get("description", "")
         device_type = device["type"]
 
-        # a. Obtener Device Profile ID desde ChirpStack según tipo (ej. MG6, LBM01)
-        #profile_id = get_device_profile_by_name(device_type)
+        application_id = tenant.get("chirpstack_app_id") or "1"
         tenant_chirpstack_id = tenant.get("chirpstack_tenant_id")
+
+        # a. Obtener Device Profile ID (por REST temporalmente — no hay gRPC directo aún)
+        from chirpstack_api_com import get_device_profile_by_name
         profile_id = get_device_profile_by_name(device_type, tenant_chirpstack_id)
         if not profile_id:
             raise ValueError(f"Device profile no encontrado en ChirpStack para: {device_type}")
 
-        # b. Buscar o usar ID de aplicación por defecto
-        application_id = tenant.get("chirpstack_app_id") or "1"  # Puedes ajustar esta lógica más adelante
+        # b. Crear dispositivo vía gRPC
+        client = ChirpstackGRPCClient()
+        client.create_device(
+            dev_eui=dev_eui,
+            name=name,
+            description=description,
+            application_id=application_id,
+            device_profile_id=profile_id,
+        )
 
-        # c. Crear dispositivo en ChirpStack
-        chirp_device = create_device(dev_eui, name, application_id, profile_id)
-        if not chirp_device:
-            raise ValueError("Error al crear el dispositivo en ChirpStack")
-
-        # d. Obtener AppKey desde MongoDB o hardcode
-        # (Asumimos que tienes una colección 'devicekeys' en Mongo con campos: type, app_key)
+        # c. Obtener AppKey desde Mongo
         key_doc = await devicekeys_collection.find_one({"type": device_type})
         app_key = key_doc["app_key"] if key_doc else "00000000000000000000000000000000"
 
-        # e. Asignar claves OTAA
-        chirp_keys = set_device_keys(dev_eui, app_key)
-        if not chirp_keys:
-            raise ValueError("Error al asignar claves OTAA en ChirpStack")
+        # d. Asignar claves OTAA (solo posible vía REST de momento)
+        from chirpstack_api_com import set_device_keys
+        set_device_keys(dev_eui, app_key)
 
     except Exception as e:
         print("⚠️ Error al sincronizar con ChirpStack:", str(e))
         import traceback
-        traceback.print_exc()  # 👈 Esto imprimirá detalles del error exacto
+        traceback.print_exc()
         await devices_collection.delete_one({"_id": ObjectId(device_id)})
         raise ValueError("Fallo la integración con ChirpStack. Dispositivo no creado.")
+
     return device_id
 
 async def list_devices_by_tenant(tenant_id: str):
