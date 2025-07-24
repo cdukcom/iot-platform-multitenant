@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from grpc.chirpstack_api import device_pb2 as grpc_dot_chirpstack__api_dot_device__pb2
+from chirpstack_api import device_pb2 as chirpstack__api_dot_device__pb2
 
 GRPC_GENERATED_VERSION = '1.73.1'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in grpc/chirpstack_api/device_pb2_grpc.py depends on'
+        + f' but the generated code in chirpstack_api/device_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,18 +36,18 @@ class DeviceServiceStub(object):
         """
         self.Get = channel.unary_unary(
                 '/chirpstack.api.DeviceService/Get',
-                request_serializer=grpc_dot_chirpstack__api_dot_device__pb2.GetDeviceRequest.SerializeToString,
-                response_deserializer=grpc_dot_chirpstack__api_dot_device__pb2.GetDeviceResponse.FromString,
+                request_serializer=chirpstack__api_dot_device__pb2.GetDeviceRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_device__pb2.GetDeviceResponse.FromString,
                 _registered_method=True)
         self.Create = channel.unary_unary(
                 '/chirpstack.api.DeviceService/Create',
-                request_serializer=grpc_dot_chirpstack__api_dot_device__pb2.CreateDeviceRequest.SerializeToString,
-                response_deserializer=grpc_dot_chirpstack__api_dot_device__pb2.CreateDeviceResponse.FromString,
+                request_serializer=chirpstack__api_dot_device__pb2.CreateDeviceRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_device__pb2.CreateDeviceResponse.FromString,
                 _registered_method=True)
         self.Delete = channel.unary_unary(
                 '/chirpstack.api.DeviceService/Delete',
-                request_serializer=grpc_dot_chirpstack__api_dot_device__pb2.DeleteDeviceRequest.SerializeToString,
-                response_deserializer=grpc_dot_chirpstack__api_dot_device__pb2.DeleteDeviceResponse.FromString,
+                request_serializer=chirpstack__api_dot_device__pb2.DeleteDeviceRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_device__pb2.DeleteDeviceResponse.FromString,
                 _registered_method=True)
 
 
@@ -77,18 +77,18 @@ def add_DeviceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Get': grpc.unary_unary_rpc_method_handler(
                     servicer.Get,
-                    request_deserializer=grpc_dot_chirpstack__api_dot_device__pb2.GetDeviceRequest.FromString,
-                    response_serializer=grpc_dot_chirpstack__api_dot_device__pb2.GetDeviceResponse.SerializeToString,
+                    request_deserializer=chirpstack__api_dot_device__pb2.GetDeviceRequest.FromString,
+                    response_serializer=chirpstack__api_dot_device__pb2.GetDeviceResponse.SerializeToString,
             ),
             'Create': grpc.unary_unary_rpc_method_handler(
                     servicer.Create,
-                    request_deserializer=grpc_dot_chirpstack__api_dot_device__pb2.CreateDeviceRequest.FromString,
-                    response_serializer=grpc_dot_chirpstack__api_dot_device__pb2.CreateDeviceResponse.SerializeToString,
+                    request_deserializer=chirpstack__api_dot_device__pb2.CreateDeviceRequest.FromString,
+                    response_serializer=chirpstack__api_dot_device__pb2.CreateDeviceResponse.SerializeToString,
             ),
             'Delete': grpc.unary_unary_rpc_method_handler(
                     servicer.Delete,
-                    request_deserializer=grpc_dot_chirpstack__api_dot_device__pb2.DeleteDeviceRequest.FromString,
-                    response_serializer=grpc_dot_chirpstack__api_dot_device__pb2.DeleteDeviceResponse.SerializeToString,
+                    request_deserializer=chirpstack__api_dot_device__pb2.DeleteDeviceRequest.FromString,
+                    response_serializer=chirpstack__api_dot_device__pb2.DeleteDeviceResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -116,8 +116,8 @@ class DeviceService(object):
             request,
             target,
             '/chirpstack.api.DeviceService/Get',
-            grpc_dot_chirpstack__api_dot_device__pb2.GetDeviceRequest.SerializeToString,
-            grpc_dot_chirpstack__api_dot_device__pb2.GetDeviceResponse.FromString,
+            chirpstack__api_dot_device__pb2.GetDeviceRequest.SerializeToString,
+            chirpstack__api_dot_device__pb2.GetDeviceResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -143,8 +143,8 @@ class DeviceService(object):
             request,
             target,
             '/chirpstack.api.DeviceService/Create',
-            grpc_dot_chirpstack__api_dot_device__pb2.CreateDeviceRequest.SerializeToString,
-            grpc_dot_chirpstack__api_dot_device__pb2.CreateDeviceResponse.FromString,
+            chirpstack__api_dot_device__pb2.CreateDeviceRequest.SerializeToString,
+            chirpstack__api_dot_device__pb2.CreateDeviceResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -170,8 +170,8 @@ class DeviceService(object):
             request,
             target,
             '/chirpstack.api.DeviceService/Delete',
-            grpc_dot_chirpstack__api_dot_device__pb2.DeleteDeviceRequest.SerializeToString,
-            grpc_dot_chirpstack__api_dot_device__pb2.DeleteDeviceResponse.FromString,
+            chirpstack__api_dot_device__pb2.DeleteDeviceRequest.SerializeToString,
+            chirpstack__api_dot_device__pb2.DeleteDeviceResponse.FromString,
             options,
             channel_credentials,
             insecure,
