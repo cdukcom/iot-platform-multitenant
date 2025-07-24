@@ -53,3 +53,5 @@ uritemplate==4.2.0
 urllib3==2.4.0
 uvicorn==0.34.3
 pydantic[email]
+grpcio==1.62.1
+grpcio-tools==1.62.1
