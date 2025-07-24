@@ -16,7 +16,7 @@ _runtime_version.ValidateProtobufRuntimeVersion(
     31,
     0,
     '',
-    'chirpstack_api/device.proto'
+    './device.proto'
 )
 # @@protoc_insertion_point(imports)
 

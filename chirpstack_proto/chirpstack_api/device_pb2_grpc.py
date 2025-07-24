@@ -4,7 +4,7 @@
 import grpc
 import warnings
 
-from chirpstack_api import device_pb2 as chirpstack__api_dot_device__pb2
+from . import device_pb2 as chirpstack__api_dot_device__pb2
 
 GRPC_GENERATED_VERSION = '1.73.1'
 GRPC_VERSION = grpc.__version__
