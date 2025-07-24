@@ -2,6 +2,7 @@
 # Métodos REST solo se usan para funciones aún no migradas a gRPC (ej. AppKey, profiles).from bson import ObjectId
 
 from datetime import datetime
+from bson import ObjectId
 from db import tenants_collection, users_collection, devices_collection, devicekeys_collection
 from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 
