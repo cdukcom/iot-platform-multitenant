@@ -18,6 +18,9 @@ from crud import create_tenant, register_device, list_devices_by_tenant, trigger
 from models import TenantModel, DeviceModel, AlertModel
 from chirpstack_grpc import ChirpstackGRPCClient
 
+#debug encontrar error silencioso
+print("[DEBUG] Iniciando iotaas.py")
+
 # 🔧 Cargar configuración
 load_dotenv()
 
@@ -36,8 +39,14 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(dummy_keepalive())
     yield  # Aquí continúa el ciclo de vida normal de FastAPI
 
+#debug error silencioso railway
+print("[DEBUG] yield ejecutado en lifespan")
+
 # 🚀 Inicializar la aplicación
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
+
+#debug detección error silencioso.
+print("[DEBUG] FastAPI inicializada")
 
 # 🌐 CORS
 app.add_middleware(
@@ -50,6 +59,9 @@ app.add_middleware(
 
 # 🔐 Middleware de autenticación
 app.add_middleware(FirebaseAuthMiddleware)
+
+#detección error silencio con debug
+print("[DEBUG] Middleware cargado")
 
 # 🧪 Rutas públicas de prueba
 @app.get("/")
@@ -273,3 +285,15 @@ async def close_alert(alert_id: str, request: Request):
     if result.modified_count == 1:
         return {"message": "Alerta cerrada exitosamente"}
     raise HTTPException(status_code=404, detail="Alerta no encontrada o ya cerrada")
+
+#debug problema silencioso railway
+print("[DEBUG] Fin de iotaas.py - app debería estar corriendo")
+
+import sys
+import traceback
+
+try:
+    print("[DEBUG] iotaas.py listo para levantar FastAPI")
+except Exception as e:
+    print("[ERROR] Excepción atrapada antes de levantar app:", str(e))
+    traceback.print_exc(file=sys.stdout)
