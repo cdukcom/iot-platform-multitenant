@@ -4,3 +4,9 @@ venv/
 __pycache__/
 *.pyc
 *.log.DS_Store
+# Archivos fuente .proto (si no deseas subirlos)
+proto/*.proto
+# Archivos intermedios o residuos de compilación
+*.pb.go
+*.pb.cc
+*.pb.h

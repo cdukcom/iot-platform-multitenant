@@ -1,11 +1,7 @@
 import grpc
 import os
-from chirpstack_proto.chirpstack_api.api import (
-    device_pb2,
-    device_pb2_grpc,
-    device_profile_pb2,
-    device_profile_pb2_grpc,
-)
+from chirpstack_proto.device import device_pb2, device_pb2_grpc
+from chirpstack_proto.device_profile import device_profile_pb2, device_profile_pb2_grpc
 
 CHIRPSTACK_GRPC_ADDRESS = os.getenv("CHIRPSTACK_GRPC_ADDRESS", "localhost:8080")
 CHIRPSTACK_API_TOKEN = os.getenv("CHIRPSTACK_API_TOKEN", "")
