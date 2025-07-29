@@ -22,7 +22,7 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from common import common_pb2 as common_dot_common__pb2
+from chirpstack_proto.common import common_pb2 as common_dot_common__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x64\x65vice/device.proto\x12\x06\x64\x65vice\x1a\x13\x63ommon/common.proto\"#\n\x10GetDeviceRequest\x12\x0f\n\x07\x64\x65v_eui\x18\x01 \x01(\tb\x06proto3')
