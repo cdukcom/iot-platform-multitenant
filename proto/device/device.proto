@@ -1,0 +1,8 @@
+syntax = "proto3";
+package device;
+
+import "common/common.proto";
+
+message GetDeviceRequest {
+  string dev_eui = 1;
+}

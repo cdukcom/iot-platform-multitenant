@@ -1,0 +1,6 @@
+syntax = "proto3";
+package device_profile;
+
+message GetDeviceProfileRequest {
+  string id = 1;
+}
