@@ -1,6 +1,6 @@
 import grpc
 import os
-from chirpstack_proto.chirpstack_api import (
+from chirpstack_proto.chirpstack_api.api import (
     device_pb2,
     device_pb2_grpc,
     device_profile_pb2,
