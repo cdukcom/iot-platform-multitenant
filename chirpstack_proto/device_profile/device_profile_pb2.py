@@ -65,3 +65,57 @@ class DeviceProfile(message.Message):
         ]
     )
 
+class ListDeviceProfilesRequest(message.Message):
+    __slots__ = ()
+
+    DESCRIPTOR = descriptor_pb2.DescriptorProto(
+        name='ListDeviceProfilesRequest',
+        field=[
+            descriptor_pb2.FieldDescriptorProto(
+                name='limit',
+                number=1,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT32,
+            ),
+            descriptor_pb2.FieldDescriptorProto(
+                name='offset',
+                number=2,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT32,
+            ),
+            descriptor_pb2.FieldDescriptorProto(
+                name='search',
+                number=3,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+            ),
+            descriptor_pb2.FieldDescriptorProto(
+                name='tenant_id',
+                number=4,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+            ),
+        ]
+    )
+
+class ListDeviceProfilesResponse(message.Message):
+    __slots__ = ()
+
+    DESCRIPTOR = descriptor_pb2.DescriptorProto(
+        name='ListDeviceProfilesResponse',
+        field=[
+            descriptor_pb2.FieldDescriptorProto(
+                name='total_count',
+                number=1,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT32,
+            ),
+            descriptor_pb2.FieldDescriptorProto(
+                name='result',
+                number=2,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+                type_name='DeviceProfile',  # ¡Importante! Este campo apunta al mensaje anterior
+            ),
+        ]
+    )
