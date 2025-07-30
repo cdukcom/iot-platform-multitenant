@@ -8,6 +8,8 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import runtime_version as _runtime_version
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import message
+from google.protobuf import descriptor_pb2
 from google.protobuf.internal import builder as _builder
 _runtime_version.ValidateProtobufRuntimeVersion(
     _runtime_version.Domain.PUBLIC,
@@ -34,3 +36,32 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GETDEVICEPROFILEREQUEST']._serialized_start=55
   _globals['_GETDEVICEPROFILEREQUEST']._serialized_end=92
 # @@protoc_insertion_point(module_scope)
+
+
+class DeviceProfile(message.Message):
+    __slots__ = ()
+    
+    DESCRIPTOR = descriptor_pb2.DescriptorProto(
+        name='DeviceProfile',
+        field=[
+            descriptor_pb2.FieldDescriptorProto(
+                name='id',
+                number=1,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+            ),
+            descriptor_pb2.FieldDescriptorProto(
+                name='name',
+                number=2,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+            ),
+            descriptor_pb2.FieldDescriptorProto(
+                name='region',
+                number=3,
+                label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+                type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+            ),
+        ]
+    )
+
