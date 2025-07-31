@@ -6,3 +6,7 @@ import "common/common.proto";
 message GetDeviceRequest {
   string dev_eui = 1;
 }
+
+service DeviceService {
+  rpc Get (GetDeviceRequest) returns (common.KeyValue);
+}

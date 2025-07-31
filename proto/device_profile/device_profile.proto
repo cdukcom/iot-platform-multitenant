@@ -1,6 +1,37 @@
 syntax = "proto3";
+
 package device_profile;
 
+option go_package = "github.com/chirpstack/chirpstack/api/go/device_profile";
+
+// Mensaje para solicitar un perfil por ID
 message GetDeviceProfileRequest {
   string id = 1;
+}
+
+// Mensaje que representa un perfil de dispositivo
+message DeviceProfile {
+  string id = 1;
+  string name = 2;
+  string region = 3;
+}
+
+// Mensaje para listar perfiles
+message ListDeviceProfilesRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string search = 3;
+  string tenant_id = 4;
+}
+
+// Respuesta al listar perfiles
+message ListDeviceProfilesResponse {
+  uint32 total_count = 1;
+  repeated DeviceProfile result = 2;
+}
+
+// Servicio gRPC
+service DeviceProfileService {
+  rpc Get (GetDeviceProfileRequest) returns (DeviceProfile);
+  rpc List (ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse);
 }
