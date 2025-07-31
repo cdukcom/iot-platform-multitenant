@@ -3,8 +3,8 @@
 import grpc
 import warnings
 
-from common import common_pb2 as common_dot_common__pb2
-from device import device_pb2 as device_dot_device__pb2
+from chirpstack_proto.common import common_pb2 as common_dot_common__pb2
+from chirpstack_proto.device import device_pb2 as device_dot_device__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
 GRPC_VERSION = grpc.__version__

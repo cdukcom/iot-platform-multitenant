@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from device_profile import device_profile_pb2 as device__profile_dot_device__profile__pb2
+from chirpstack_proto.device_profile import device_profile_pb2 as device__profile_dot_device__profile__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
 GRPC_VERSION = grpc.__version__
