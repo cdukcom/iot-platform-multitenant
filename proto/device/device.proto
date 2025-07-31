@@ -1,5 +1,5 @@
 syntax = "proto3";
-package device;
+package api;
 
 import "common/common.proto";
 
@@ -8,5 +8,5 @@ message GetDeviceRequest {
 }
 
 service DeviceService {
-  rpc Get (GetDeviceRequest) returns (common.KeyValue);
+  rpc Get (GetDeviceRequest) returns (api.KeyValue);
 }

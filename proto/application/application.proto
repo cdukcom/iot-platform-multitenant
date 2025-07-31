@@ -1,5 +1,5 @@
 syntax = "proto3";
-package application;
+package api;
 
 message GetApplicationRequest {
   string id = 1;
