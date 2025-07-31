@@ -1,6 +1,6 @@
 import os
 
-base_dir = "chirpstack_proto"
+base_dir = "chirpstack_proto/api"
 log = []
 
 def patch_line(line):
@@ -8,11 +8,11 @@ def patch_line(line):
         parts = line.split()
         pkg = parts[1]
         # Corrige import incorrecto de google.protobuf
-        if pkg.startswith("chirpstack_proto.google.protobuf"):
-            return line.replace("chirpstack_proto.google.protobuf", "google.protobuf"), True
-        # Corrige imports internos que no empiezan con chirpstack_proto.
-        elif not pkg.startswith("chirpstack_proto.") and not pkg.startswith("google.protobuf"):
-            return line.replace(f"from {pkg} import", f"from chirpstack_proto.{pkg} import"), True
+        if pkg.startswith("chirpstack_proto.api.google.protobuf"):
+            return line.replace("chirpstack_proto.api.google.protobuf", "google.protobuf"), True
+        # Corrige imports internos que no empiezan con chirpstack_proto.api.
+        elif not pkg.startswith("chirpstack_proto.api.") and not pkg.startswith("google.protobuf"):
+            return line.replace(f"from {pkg} import", f"from chirpstack_proto.api.{pkg} import"), True
     return line, False
 
 for root, _, files in os.walk(base_dir):
