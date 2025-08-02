@@ -19,6 +19,17 @@ async def create_tenant(data: TenantModel, owner_uid: str):
     result = await tenants_collection.insert_one(tenant)
     return str(result.inserted_id)
 
+async def delete_tenant_by_id(tenant_id: str, owner_uid: str):
+    try:
+        result = await tenants_collection.delete_one({
+            "_id": ObjectId(tenant_id),
+            "owner_uid": owner_uid
+        })
+        return result.deleted_count
+    except Exception as e:
+        print("❌ Error al intentar borrar tenant:", e)
+        return 0
+
 # ────────────────────────────────────────────────
 # 📦 BLOQUE: DEVICES
 # ────────────────────────────────────────────────

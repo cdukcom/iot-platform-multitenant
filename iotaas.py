@@ -4,11 +4,12 @@ import os
 import logging
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, Body, Query, Depends, HTTPException, APIRouter
+from fastapi import FastAPI, Request, Body, Query, Depends, HTTPException, APIRouter, Path
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from bson import ObjectId
 from pymongo import MongoClient
+from crud import delete_tenant_by_id
 
 # 📦 Módulos locales
 from db import tenants_collection
@@ -94,7 +95,6 @@ async def create_tenant_endpoint(data: dict = Body(...), request: Request = None
     tenant_id = await create_tenant(tenant_data, owner_uid=user["uid"])
     return {"tenant_id": tenant_id}
 
-
 @app.get("/tenants")
 async def list_tenants(request: Request):
     user = request.state.user
@@ -110,6 +110,18 @@ async def list_tenants(request: Request):
             "created_at": doc.get("created_at", None)
         })
     return {"tenants": tenants}
+
+@app.delete("/tenants/{tenant_id}")
+async def delete_tenant_endpoint(tenant_id: str = Path(...), request: Request = None):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    deleted = await delete_tenant_by_id(tenant_id, user["uid"])
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Comunidad no encontrada o no autorizada.")
+    
+    return {"message": "Comunidad eliminada correctamente"}
 
 # 📡 Gestión de Dispositivos
 @app.post("/devices")
