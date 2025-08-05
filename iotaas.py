@@ -12,11 +12,10 @@ from pymongo import MongoClient
 from crud import delete_tenant_by_id
 
 # 📦 Módulos locales
-from db import tenants_collection
-from db import devicekeys_collection
+from db import tenants_collection, devicekeys_collection, users_collection
 from middleware import FirebaseAuthMiddleware
 from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
-from models import TenantModel, DeviceModel, AlertModel
+from models import TenantModel, DeviceModel, AlertModel, UserRegisterModel
 from chirpstack_grpc import ChirpstackGRPCClient
 
 #debug encontrar error silencioso
@@ -84,6 +83,35 @@ async def private(request: Request):
     if user:
         return JSONResponse(content={"message": "Authenticated", "uid": user.get("uid")})
     return HTTPException(status_code=401, content={"error": "Unauthorized"})
+
+@app.post("/usuarios")
+async def register_user(request: Request, body: dict = Body(...)):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    if not user.get("email_verified"):
+        raise HTTPException(status_code=403, detail="Correo no verificado")
+
+    uid = user["uid"]
+    email = user["email"]
+
+    # Verifica si ya está en Mongo
+    existing = await users_collection.find_one({"uid": uid})
+    if existing:
+        return {"message": "Usuario ya registrado en MongoDB"}
+
+    user_data = UserRegisterModel(
+        uid=uid,
+        email=email,
+        role=body.get("role", "user"),
+        plan=body.get("plan", "trial"),
+        phone=body.get("phone"),
+        full_name=body.get("full_name")
+    )
+
+    await users_collection.insert_one(user_data.model_dump())
+    return {"message": "Usuario registrado exitosamente", "uid": uid}
 
 # 🧱 Gestión de Tenants
 @app.post("/tenants")

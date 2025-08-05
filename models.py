@@ -54,3 +54,14 @@ class LogModel(BaseModel):
     action: Literal["created", "closed", "notified", "commented"]
     performed_by: Optional[str]  # uid del usuario
     note: Optional[str]  # observación tipo bitácora
+
+# ---------- Registro inicial de usuario ----------
+class UserRegisterModel(BaseModel):
+    uid: str  # UID de Firebase
+    email: EmailStr
+    role: Literal["admin", "user"] = "user"
+    tenant_id: Optional[str] = None  # aún no ha creado comunidad
+    plan: Literal["trial", "basic", "pro", "corporate"] = "trial"
+    phone: Optional[str] = None
+    full_name: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
