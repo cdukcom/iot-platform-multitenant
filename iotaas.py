@@ -51,7 +51,10 @@ print("[DEBUG] FastAPI inicializada")
 # 🌐 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Ajustar en producción
+    allow_origins=[
+        "http://localhost:5173",
+        "https://app.duke-villa.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

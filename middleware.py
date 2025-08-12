@@ -2,6 +2,8 @@ from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from auth import verify_token
 
+logger.info(f"[AUTH] {request.method} {request.url.path} - Authorization present? {bool(auth_header)}")
+
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Permitir sin autenticación: rutas públicas o método OPTIONS
