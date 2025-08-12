@@ -1,8 +1,10 @@
+import logging
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from auth import verify_token
 
-logger.info(f"[AUTH] {request.method} {request.url.path} - Authorization present? {bool(auth_header)}")
+# Configurar logger para este módulo
+logger = logging.getLogger(__name__)
 
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -12,6 +14,10 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization")
+
+        # Log dentro del contexto de la petición
+        logger.info(f"[AUTH] {request.method} {request.url.path} - Authorization present? {bool(auth_header)}")
+
         if not auth_header or not auth_header.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
 
