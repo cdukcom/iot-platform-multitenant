@@ -3,6 +3,7 @@ import grpc
 from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from chirpstack_proto.api.device import device_pb2, device_pb2_grpc
 from chirpstack_proto.api.device_profile import device_profile_pb2, device_profile_pb2_grpc
+from chirpstack_proto.api.tenant import tenant_pb2, tenant_pb2_grpc
 
 # Obtener la API Key y el host desde variables de entorno
 CHIRPSTACK_API_KEY = os.getenv("CHIRPSTACK_API_KEY")
@@ -24,7 +25,9 @@ class ChirpstackGRPCClient:
         # Inicializar stubs
         self.device_stub = device_pb2_grpc.DeviceServiceStub(self.channel)
         self.device_profile_stub = device_profile_pb2_grpc.DeviceProfileServiceStub(self.channel)
-        
+        self.tenant_stub = tenant_pb2_grpc.TenantServiceStub(self.channel)
+    
+    # --- DEVICE ---
     def get_device(self, dev_eui: str):
         request = device_pb2.GetDeviceRequest(dev_eui=dev_eui)
         return self.device_stub.Get(request)
@@ -54,3 +57,25 @@ class ChirpstackGRPCClient:
                 return profile.id
         
         raise ValueError(f"Perfil de dispositivo '{profile_name}' no encontrado para tenant {tenant_id}")
+    
+    # --- TENANT ---
+    def get_tenant(self, tenant_id: str):
+        """Obtiene un tenant por ID (levanta excepción gRPC si falla)."""
+        req = tenant_pb2.GetTenantRequest(id=tenant_id)
+        return self.tenant_stub.Get(req)
+
+    def list_tenants(self, limit: int = 50, offset: int = 0, search: str = ""):
+        """Lista tenants (paginado simple)."""
+        req = tenant_pb2.ListTenantsRequest(limit=limit, offset=offset, search=search)
+        return self.tenant_stub.List(req)
+
+    def create_tenant(self, name: str, description: str = "", can_have_gateways: bool = True):
+        """Crea un tenant en ChirpStack (levanta excepción gRPC si falla)."""
+        req = tenant_pb2.CreateTenantRequest(
+            tenant=tenant_pb2.Tenant(
+               name=name,
+               description=description,
+               can_have_gateways=can_have_gateways,
+            )
+        )
+        return self.tenant_stub.Create(req)

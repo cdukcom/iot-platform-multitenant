@@ -5,6 +5,7 @@ from datetime import datetime
 from bson import ObjectId
 from db import tenants_collection, users_collection, devices_collection, devicekeys_collection
 from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
+from grpc import RpcError
 
 # from chirpstack_gprc import client.get_device_profile_id_by_name
 from chirpstack_grpc import ChirpstackGRPCClient
@@ -14,21 +15,47 @@ from chirpstack_grpc import ChirpstackGRPCClient
 # 🧱 BLOQUE: TENANTS
 # ────────────────────────────────────────────────
 async def create_tenant(data: TenantModel, owner_uid: str):
+    """
+    Crea primero el documento en Mongo (para mantener tu flujo actual),
+    luego intenta crear el tenant en ChirpStack.
+    Si gRPC falla, hace rollback en Mongo y lanza error para el frontend.
+    """
     tenant = data.model_dump()
     tenant["owner_uid"] = owner_uid
-    result = await tenants_collection.insert_one(tenant)
-    return str(result.inserted_id)
 
-async def delete_tenant_by_id(tenant_id: str, owner_uid: str):
+    # 1) Insertar en Mongo
+    result = await tenants_collection.insert_one(tenant)
+    inserted_id = result.inserted_id
+
+    # 2) Intentar en ChirpStack (gRPC)
     try:
-        result = await tenants_collection.delete_one({
-            "_id": ObjectId(tenant_id),
-            "owner_uid": owner_uid
-        })
-        return result.deleted_count
+        cs = ChirpstackGRPCClient()
+        cs_resp = cs.create_tenant(
+            name=tenant.get("name", ""),
+            description=tenant.get("description", ""),
+            can_have_gateways=tenant.get("can_have_gateways", True),
+        )
+        chirp_tenant_id = cs_resp.id
+
+        # 3) Si gRPC OK, persistimos el id de ChirpStack en Mongo
+        await tenants_collection.update_one(
+            {"_id": inserted_id},
+            {"$set": {"chirpstack_tenant_id": chirp_tenant_id}},
+        )
+
+        return str(inserted_id)
+
+    except RpcError as e:
+        # Rollback en Mongo si falla gRPC
+        await tenants_collection.delete_one({"_id": inserted_id})
+        # Mensaje claro hacia el frontend
+        msg = e.details() or "Error gRPC al crear tenant en ChirpStack."
+        raise ValueError(msg)
+
     except Exception as e:
-        print("❌ Error al intentar borrar tenant:", e)
-        return 0
+        # Cualquier otro error inesperado: también rollback
+        await tenants_collection.delete_one({"_id": inserted_id})
+        raise ValueError(f"Error al crear tenant: {str(e)}")
 
 # ────────────────────────────────────────────────
 # 📦 BLOQUE: DEVICES

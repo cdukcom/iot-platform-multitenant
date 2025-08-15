@@ -10,8 +10,8 @@ def patch_proto_line(line):
         parts = line.split()
         pkg = parts[1]
         # Corrige import incorrecto de google.protobuf
-        if pkg.startswith("chirpstack_proto.api.google.protobuf"):
-            return line.replace("chirpstack_proto.api.google.protobuf", "google.protobuf"), True
+        if pkg.startswith("chirpstack_proto.api.google."):
+            return line.replace("chirpstack_proto.api.google.", "google."), True
         # Corrige imports internos sin el prefijo chirpstack_proto.api
         elif not pkg.startswith("chirpstack_proto.api.") and not pkg.startswith("google.protobuf"):
             return line.replace(f"from {pkg} import", f"from chirpstack_proto.api.{pkg} import"), True
