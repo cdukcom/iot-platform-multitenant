@@ -1,5 +1,5 @@
 # 🔄 AVISO: Este archivo usa gRPC como vía principal para ChirpStack.
-# Métodos REST solo se usan para funciones aún no migradas a gRPC (ej. AppKey, profiles).from bson import ObjectId
+# Métodos REST solo se usan para funciones aún no migradas a gRPC (ej. AppKey, profiles).
 
 from datetime import datetime
 from bson import ObjectId
@@ -56,6 +56,61 @@ async def create_tenant(data: TenantModel, owner_uid: str):
         # Cualquier otro error inesperado: también rollback
         await tenants_collection.delete_one({"_id": inserted_id})
         raise ValueError(f"Error al crear tenant: {str(e)}")
+
+async def delete_tenant_by_id(tenant_id: str, purge_devices: bool = True):
+    """
+    Elimina un tenant por su _id de Mongo.
+    - Si existe chirpstack_tenant_id, intenta eliminarlo en ChirpStack vía gRPC.
+    - Luego elimina los dispositivos del tenant en Mongo (opcional).
+    - Finalmente elimina el documento del tenant en Mongo.
+    Lanza ValueError con mensaje claro si algo falla.
+    """
+    # 1) Buscar tenant en Mongo
+    try:
+        oid = ObjectId(tenant_id)
+    except Exception:
+        raise ValueError("tenant_id inválido")
+
+    tenant = await tenants_collection.find_one({"_id": oid})
+    if not tenant:
+        raise ValueError("Tenant no encontrado")
+
+    chirp_tenant_id = tenant.get("chirpstack_tenant_id")
+
+    # 2) Intentar eliminar en ChirpStack (si hay id)
+    chirpstack_deleted = False
+    if chirp_tenant_id:
+        try:
+            cs = ChirpstackGRPCClient()
+            # Ajusta el nombre del método si en tu cliente es distinto.
+            # Se asume un método delete_tenant(chirp_tenant_id: str) -> None
+            cs.delete_tenant(chirp_tenant_id)
+            chirpstack_deleted = True
+        except RpcError as e:
+            # No detiene el borrado en Mongo si decides seguir; si prefieres abortar, lanza el error.
+            msg = e.details() or "Error gRPC al eliminar tenant en ChirpStack."
+            raise ValueError(msg)
+        except AttributeError:
+            # Tu cliente no tiene el método esperado
+            raise ValueError("El cliente gRPC no implementa delete_tenant(). Revísalo en chirpstack_grpc.py")
+
+    # 3) Borrar dispositivos del tenant en Mongo (opcional)
+    mongo_devices_deleted = 0
+    if purge_devices:
+        res_dev = await devices_collection.delete_many({"tenant_id": tenant_id})
+        mongo_devices_deleted = res_dev.deleted_count
+
+    # 4) Borrar tenant en Mongo
+    res_tenant = await tenants_collection.delete_one({"_id": oid})
+    if res_tenant.deleted_count != 1:
+        raise ValueError("No se pudo eliminar el tenant en Mongo")
+
+    return {
+        "ok": True,
+        "chirpstack_deleted": chirpstack_deleted,
+        "mongo_devices_deleted": mongo_devices_deleted,
+        "tenant_id": tenant_id,
+    }
 
 # ────────────────────────────────────────────────
 # 📦 BLOQUE: DEVICES

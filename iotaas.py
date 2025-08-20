@@ -143,16 +143,37 @@ async def list_tenants(request: Request):
     return {"tenants": tenants}
 
 @app.delete("/tenants/{tenant_id}")
-async def delete_tenant_endpoint(tenant_id: str = Path(...), request: Request = None):
+async def delete_tenant_endpoint(
+    tenant_id: str = Path(...),
+    request: Request = None,
+    purge_devices: bool = True,
+):
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    deleted = await delete_tenant_by_id(tenant_id, user["uid"])
-    if deleted == 0:
+    # 1) Validar ID y propiedad antes de borrar
+    try:
+        oid = ObjectId(tenant_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="tenant_id inválido")
+
+    tenant = await tenants_collection.find_one({"_id": oid, "owner_uid": user["uid"]})
+    if not tenant:
+        # No existe o no pertenece al usuario autenticado
         raise HTTPException(status_code=404, detail="Comunidad no encontrada o no autorizada.")
-    
-    return {"message": "Comunidad eliminada correctamente"}
+
+    # 2) Ejecutar borrado centralizado (Mongo + ChirpStack)
+    try:
+        result = await delete_tenant_by_id(tenant_id, purge_devices=purge_devices)
+        # result es un dict: {"ok": True, "chirpstack_deleted": bool, "mongo_devices_deleted": int, "tenant_id": str}
+        return result
+    except ValueError as e:
+        # Errores esperables (ids inválidos, fallo gRPC, etc.)
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error interno al eliminar tenant")
+
 
 # 📡 Gestión de Dispositivos
 @app.post("/devices")

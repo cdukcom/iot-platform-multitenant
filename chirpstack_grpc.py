@@ -79,3 +79,8 @@ class ChirpstackGRPCClient:
             )
         )
         return self.tenant_stub.Create(req)
+    
+    def delete_tenant(self, tenant_id: str):
+        """Elimina un tenant por ID en ChirpStack (levanta excepción gRPC si falla)."""
+        req = tenant_pb2.DeleteTenantRequest(id=tenant_id)
+        return self.tenant_stub.Delete(req)
