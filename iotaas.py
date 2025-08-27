@@ -80,25 +80,17 @@ async def ping_db():
     except Exception as e:
         return {"status": "error", "details": str(e)}
     
+# 🧪 Smoke gRPC (sin chirpstack_api para evitar conflictos de proto)
 @app.get("/_gw_smoke", include_in_schema=False)
 async def gw_smoke():
     try:
-        # imports perezosos: solo para esta ruta
-        from chirpstack_api.api import gateway_pb2 as gw_pb2
-        from chirpstack_api.api import gateway_pb2_grpc as gw_pb2_grpc
-
-        addr = os.getenv("CHIRPSTACK_GRPC_ADDRESS", "localhost:8080")
-        apikey = os.getenv("CHIRPSTACK_API_KEY")
-        if not apikey:
-            return {"ok": False, "error": "CHIRPSTACK_API_KEY missing"}
-
-        channel = grpc.intercept_channel(
-            grpc.insecure_channel(addr),
-            ApiKeyAuthInterceptor(apikey),
-        )
-        stub = gw_pb2_grpc.GatewayServiceStub(channel)
-        resp = stub.List(gw_pb2.ListGatewaysRequest(limit=1))
-        return {"ok": True, "total_count": getattr(resp, "total_count", None)}
+        c = ChirpstackGRPCClient()  # usa tus stubs locales
+        resp = c.list_tenants(limit=1)
+        return {
+            "ok": True,
+            "checked": "tenant_list",
+            "total_count": getattr(resp, "total_count", None),
+        }
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
