@@ -6,10 +6,13 @@ from auth import verify_token
 # Configurar logger para este módulo
 logger = logging.getLogger(__name__)
 
+# ➕ rutas abiertas (sin auth)
+OPEN_PATHS = {"/", "/ping-db", "/_gw_smoke"}
+
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Permitir sin autenticación: rutas públicas o método OPTIONS
-        if request.method == "OPTIONS" or request.url.path in ["/", "/ping-db"]:
+        if request.method == "OPTIONS" or request.url.path in ["/", "/ping-db", "/_gw_smoke"]:
             # Permitimos estas rutas sin autenticación
             return await call_next(request)
 
