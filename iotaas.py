@@ -1,6 +1,7 @@
 
 import asyncio
 import os, grpc
+import subprocess, sys, json
 import logging
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -91,6 +92,19 @@ async def gw_smoke():
             "checked": "tenant_list",
             "total_count": getattr(resp, "total_count", None),
         }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+    
+@app.get("/_gw_list_sidecar", include_in_schema=False)
+async def gw_list_sidecar():
+    try:
+        proc = subprocess.run(
+            [sys.executable, "gw_sidecar.py", "list", "--limit", "1"],
+            capture_output=True, text=True, check=True
+        )
+        return json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
