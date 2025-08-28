@@ -3,6 +3,7 @@ import asyncio
 import os, grpc
 import subprocess, sys, json
 import logging
+import httpx
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Body, Query, Depends, HTTPException, APIRouter, Path
@@ -12,6 +13,7 @@ from bson import ObjectId
 from pymongo import MongoClient
 from crud import delete_tenant_by_id
 from grpc_auth_interceptor import ApiKeyAuthInterceptor
+from datetime import datetime, timezone
 
 # 📦 Módulos locales
 from db import tenants_collection, devicekeys_collection, users_collection
@@ -235,6 +237,122 @@ async def delete_tenant_endpoint(
     except Exception:
         raise HTTPException(status_code=500, detail="Error interno al eliminar tenant")
 
+
+# 📡 Gestión de Gateways
+@app.post("/gateways")
+async def create_gateway_api(data: dict = Body(...), request: Request = None):
+    # auth
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # payload
+    tenant_mongo_id = data.get("tenant_id")
+    gw_eui = (data.get("gateway_id") or "").strip().upper()
+    name = (data.get("name") or "").strip()
+    description = data.get("description") or ""
+    tags = data.get("tags") or {}
+
+    # validaciones mínimas
+    if not tenant_mongo_id or not gw_eui or not name:
+        raise HTTPException(status_code=400, detail="tenant_id, gateway_id y name son obligatorios")
+    if len(gw_eui) != 16:
+        raise HTTPException(status_code=400, detail="gateway_id debe tener 16 hex")
+
+    # tenant dueño?
+    try:
+        oid = ObjectId(tenant_mongo_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="tenant_id inválido")
+
+    tenant = await tenants_collection.find_one({"_id": oid, "owner_uid": user["uid"]})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant no encontrado o no autorizado")
+
+    chirp_tenant_id = tenant.get("chirpstack_tenant_id")
+    if not chirp_tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant sin chirpstack_tenant_id")
+
+    # evitar duplicado en Mongo
+    exists = await devices_collection.find_one({
+        "tenant_id": tenant_mongo_id,
+        "type": "gateway",
+        "dev_eui": gw_eui,
+    })
+    if exists:
+        raise HTTPException(status_code=409, detail="Gateway ya existe en Mongo para este tenant")
+
+    # crear en ChirpStack vía sidecar (import isolation)
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.post(
+                "http://127.0.0.1:8000/_gw_create_sidecar",
+                json={
+                    "tenant_id": chirp_tenant_id,
+                    "gateway_id": gw_eui,
+                    "name": name,
+                    "description": description,
+                    "tags": tags,
+                },
+            )
+        js = r.json()
+        if r.status_code != 200 or not js.get("ok"):
+            raise HTTPException(status_code=400, detail=f"ChirpStack error: {js.get('error')}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Sidecar error: {str(e)}")
+
+    # reflejar en Mongo (colección devices, como ya usa tu FE)
+    doc = {
+        "tenant_id": tenant_mongo_id,
+        "dev_eui": gw_eui,
+        "name": name,
+        "type": "gateway",
+        "status": "active",
+        "location": data.get("location") or "",
+        "created_at": datetime.now(timezone.utc),
+        "meta": {
+            "chirpstack_tenant_id": chirp_tenant_id,
+            "description": description,
+            "tags": tags,
+        },
+    }
+    ins = await devices_collection.insert_one(doc)
+
+    return {
+        "ok": True,
+        "id": str(ins.inserted_id),
+        "gateway_id": gw_eui,
+        "tenant_id": tenant_mongo_id,
+    }
+
+@app.get("/gateways")
+async def list_gateways_api(tenant_id: str = Query(...), request: Request = None):
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        oid = ObjectId(tenant_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="tenant_id inválido")
+
+    tenant = await tenants_collection.find_one({"_id": oid, "owner_uid": user["uid"]})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant no encontrado o no autorizado")
+
+    cursor = devices_collection.find({"tenant_id": tenant_id, "type": "gateway"})
+    out = []
+    async for d in cursor:
+        out.append({
+            "id": str(d["_id"]),
+            "dev_eui": d.get("dev_eui"),
+            "name": d.get("name"),
+            "status": d.get("status", "active"),
+            "location": d.get("location", ""),
+        })
+    return {"gateways": out}
 
 # 📡 Gestión de Dispositivos
 @app.post("/devices")
