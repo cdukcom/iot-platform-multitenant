@@ -388,10 +388,10 @@ async def delete_gateway_api(
 
     # 1) Borrar en ChirpStack (vía sidecar) — idempotente
     try:
-        js = await _gw_delete_sidecar({"gateway_id": gw_eui})
+        gw_cs = gw_eui.lower()  # <-- sidecar/ChirpStack lo esperan en minúsculas
+        js = await _gw_delete_sidecar({"gateway_id": gw_cs})
         if not js.get("ok"):
             # Si el GW no existe en ChirpStack, seguimos (idempotente)
-            # Ajusta el mensaje según lo que devuelva el sidecar
             msg = (js.get("error") or "").lower()
             if "not found" not in msg and "does not exist" not in msg:
                 raise HTTPException(status_code=502, detail=f"ChirpStack delete error: {js.get('error')}")
