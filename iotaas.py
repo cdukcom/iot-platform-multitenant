@@ -326,6 +326,94 @@ async def create_gateway_api(data: dict = Body(...), request: Request = None):
         "tenant_id": tenant_mongo_id,
     }
 
+@app.post("/_gw_delete_sidecar", include_in_schema=False)
+async def _gw_delete_sidecar(body: dict):
+    # body: { gateway_id }
+    try:
+        gateway_id = body["gateway_id"]
+    except KeyError as e:
+        return {"ok": False, "error": f"missing field: {e.args[0]}"}
+
+    args = [sys.executable, "-m", "gw_sidecar", "delete",
+            "--gateway-id", gateway_id]
+
+    proc = subprocess.run(args, capture_output=True, text=True)
+    if proc.returncode != 0:
+        # sidecar puede imprimir JSON de error o solo texto
+        try:
+            return json.loads(proc.stdout or proc.stderr or "{}")
+        except Exception:
+            return {"ok": False, "error": proc.stderr or proc.stdout or "unknown delete error"}
+
+    try:
+        return json.loads(proc.stdout)
+    except Exception:
+        return {"ok": False, "error": f"bad sidecar json: {proc.stdout}"}
+
+@app.delete("/gateways/{gateway_id}")
+async def delete_gateway_api(
+    gateway_id: str,
+    tenant_id: str = Query(..., description="tenant_id (Mongo) dueño del gateway"),
+    confirm: bool = Query(False, description="Debe ser true para confirmar el borrado"),
+    request: Request = None
+):
+    # Auth
+    user = request.state.user
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if not confirm:
+        raise HTTPException(status_code=400, detail="Falta confirmación (?confirm=true)")
+
+    # Validaciones
+    gw_eui = (gateway_id or "").strip().upper()
+    if len(gw_eui) != 16 or any(c not in "0123456789ABCDEF" for c in gw_eui):
+        raise HTTPException(status_code=400, detail="gateway_id debe ser 16 hex (0-9, A-F)")
+
+    try:
+        oid = ObjectId(tenant_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="tenant_id inválido")
+
+    # Tenant dueño
+    tenant = await tenants_collection.find_one({"_id": oid, "owner_uid": user["uid"]})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant no encontrado o no autorizado")
+
+    # Buscar gateway en Mongo (colección devices con type=gateway)
+    doc = await devices_collection.find_one({
+        "tenant_id": tenant_id,
+        "type": "gateway",
+        "dev_eui": gw_eui
+    })
+
+    # 1) Borrar en ChirpStack (vía sidecar) — idempotente
+    try:
+        js = await _gw_delete_sidecar({"gateway_id": gw_eui})
+        if not js.get("ok"):
+            # Si el GW no existe en ChirpStack, seguimos (idempotente)
+            # Ajusta el mensaje según lo que devuelva el sidecar
+            msg = (js.get("error") or "").lower()
+            if "not found" not in msg and "does not exist" not in msg:
+                raise HTTPException(status_code=502, detail=f"ChirpStack delete error: {js.get('error')}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Sidecar delete error: {e}")
+
+    # 2) Borrar en Mongo (idempotente)
+    if doc:
+        res = await devices_collection.delete_one({"_id": doc["_id"]})
+        deleted = res.deleted_count
+    else:
+        deleted = 0  # ya no estaba en Mongo
+
+    return {
+        "ok": True,
+        "gateway_id": gw_eui,
+        "tenant_id": tenant_id,
+        "mongo_deleted": deleted
+    }
+
 @app.get("/gateways")
 async def list_gateways_api(tenant_id: str = Query(...), request: Request = None):
     user = request.state.user
@@ -353,7 +441,27 @@ async def list_gateways_api(tenant_id: str = Query(...), request: Request = None
         })
     return {"gateways": out}
 
+@app.get("/_gw_list_sidecar", include_in_schema=False)
+async def gw_list_sidecar():
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "gw_sidecar", "list", "--limit", "1"],
+            capture_output=True, text=True, check=True
+        )
+        return json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # 📡 Gestión de Dispositivos
+# en startup (si tienes acceso al motor/colección aquí):
+# await devices_collection.create_index(
+#     [("tenant_id", 1), ("type", 1), ("dev_eui", 1)],
+#     unique=True,
+#     name="uniq_tenant_type_dev_eui"
+# )
+
 @app.post("/devices")
 async def register_device_endpoint(data: dict = Body(...), request: Request = None):
     user = request.state.user
@@ -409,7 +517,7 @@ async def delete_device(device_id: str, confirm: bool = Query(False), request: R
 
 @app.get("/devices/{dev_eui}/data")
 def get_device_data(dev_eui: str):
-    db = MongoClient(os.getenv("MONGODB_URI"))["PLATAFORMA_IOT"]
+    db = MongoClient(os.getenv("MONGO_URI"))["PLATAFORMA_IOT"]
     data = list(db["mqtt_data"].find({"device_eui": dev_eui}))
     if not data:
         raise HTTPException(status_code=404, detail="No se encontraron datos para este dispositivo.")
