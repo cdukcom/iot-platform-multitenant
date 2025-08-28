@@ -16,7 +16,7 @@ from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from datetime import datetime, timezone
 
 # 📦 Módulos locales
-from db import tenants_collection, devicekeys_collection, users_collection
+from db import tenants_collection, devicekeys_collection, users_collection, devices_collection
 from middleware import FirebaseAuthMiddleware
 from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel, DeviceModel, AlertModel, UserRegisterModel
@@ -284,24 +284,23 @@ async def create_gateway_api(data: dict = Body(...), request: Request = None):
 
     # crear en ChirpStack vía sidecar (import isolation)
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            r = await client.post(
-                "http://127.0.0.1:8000/_gw_create_sidecar",
-                json={
-                    "tenant_id": chirp_tenant_id,
-                    "gateway_id": gw_eui,
-                    "name": name,
-                    "description": description,
-                    "tags": tags,
-                },
-            )
-        js = r.json()
-        if r.status_code != 200 or not js.get("ok"):
-            raise HTTPException(status_code=400, detail=f"ChirpStack error: {js.get('error')}")
+        js = await _gw_create_sidecar({
+            "tenant_id": chirp_tenant_id,
+            "gateway_id": gw_eui,
+            "name": name,
+            "description": description,
+            "tags": tags,
+        })
+        if not js.get("ok"):
+           # deja pasar el error funcional con 400
+           detail = js.get("error") or "Error al crear gateway en ChirpStack (sidecar)"
+           raise HTTPException(status_code=400, detail=f"ChirpStack error: {detail}")
     except HTTPException:
+        # respeta los 400/401/... que tú mismo generes
         raise
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Sidecar error: {str(e)}")
+        # errores de transporte/inesperados → 502
+        raise HTTPException(status_code=502, detail=f"Sidecar error: {e}")
 
     # reflejar en Mongo (colección devices, como ya usa tu FE)
     doc = {
