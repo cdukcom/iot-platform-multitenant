@@ -6,32 +6,95 @@ from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from chirpstack_api.api import gateway_pb2 as gw_pb2
 from chirpstack_api.api import gateway_pb2_grpc as gw_pb2_grpc
 
-def make_stub():
+def _channel():
     addr = os.getenv("CHIRPSTACK_GRPC_ADDRESS", "localhost:8080")
-    api_key = os.getenv("CHIRPSTACK_API_KEY")
-    if not api_key:
-        print(json.dumps({"ok": False, "error": "CHIRPSTACK_API_KEY missing"}))
-        sys.exit(1)
-    channel = grpc.intercept_channel(grpc.insecure_channel(addr), ApiKeyAuthInterceptor(api_key))
-    return gw_pb2_grpc.GatewayServiceStub(channel)
+    apikey = os.getenv("CHIRPSTACK_API_KEY")
+    if not apikey:
+        raise RuntimeError("CHIRPSTACK_API_KEY missing")
+    return grpc.intercept_channel(
+        grpc.insecure_channel(addr),
+        ApiKeyAuthInterceptor(apikey),
+    )
 
-def cmd_list(limit: int, tenant_id: str):
-    stub = make_stub()
-    resp = stub.List(gw_pb2.ListGatewaysRequest(limit=limit, tenant_id=tenant_id or ""))
-    print(json.dumps({"ok": True, "total_count": getattr(resp, "total_count", None)}))
+def list_gateways(limit=1, tenant_id=""):
+    ch = _channel()
+    stub = gw_pb2_grpc.GatewayServiceStub(ch)
+    req = gw_pb2.ListGatewaysRequest(limit=limit)
+    if tenant_id:
+        req.tenant_id = tenant_id
+    resp = stub.List(req)
+    return {"ok": True, "total_count": getattr(resp, "total_count", None)}
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser()
+def _parse_tags(tags_str: str | None) -> dict:
+    if not tags_str:
+        return {}
+    out = {}
+    for pair in tags_str.split(","):
+        if "=" in pair:
+            k, v = pair.split("=", 1)
+            out[k.strip()] = v.strip()
+    return out
+
+def create_gateway(gateway_id: str, name: str, tenant_id: str, description: str = "", tags_str: str | None = None):
+    # validación mínima de EUI64 (16 hex)
+    import re
+    if not re.fullmatch(r"[0-9A-Fa-f]{16}", gateway_id or ""):
+        return {"ok": False, "error": "gateway_id debe ser 16 hex (EUI64)"}
+    if not tenant_id:
+        return {"ok": False, "error": "tenant_id es obligatorio"}
+    if not name:
+        return {"ok": False, "error": "name es obligatorio"}
+
+    ch = _channel()
+    stub = gw_pb2_grpc.GatewayServiceStub(ch)
+    tags = _parse_tags(tags_str)
+
+    req = gw_pb2.CreateGatewayRequest(
+        gateway=gw_pb2.Gateway(
+            gateway_id=gateway_id.upper(),
+            name=name,
+            description=description or "",
+            tenant_id=tenant_id,
+            tags=tags,
+        )
+    )
+    stub.Create(req)
+    return {"ok": True, "gateway_id": gateway_id.upper(), "tenant_id": tenant_id}
+
+def main():
+    p = argparse.ArgumentParser(prog="gw_sidecar", description="Gateway sidecar (safe cmds)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_list = sub.add_parser("list")
     p_list.add_argument("--limit", type=int, default=1)
     p_list.add_argument("--tenant-id", default="")
 
+    p_create = sub.add_parser("create")
+    p_create.add_argument("--gateway-id", required=True)
+    p_create.add_argument("--name", required=True)
+    p_create.add_argument("--tenant-id", required=True)
+    p_create.add_argument("--description", default="")
+    p_create.add_argument("--tags", default="", help="k1=v1,k2=v2")
+
     args = p.parse_args()
+
     try:
         if args.cmd == "list":
-            cmd_list(args.limit, args.tenant_id)
+            out = list_gateways(limit=args.limit, tenant_id=args.tenant_id)
+        elif args.cmd == "create":
+            out = create_gateway(
+                gateway_id=args.gateway_id,
+                name=args.name,
+                tenant_id=args.tenant_id,
+                description=args.description,
+                tags_str=args.tags,
+            )
+        else:
+            out = {"ok": False, "error": f"unknown cmd {args.cmd}"}
     except Exception as e:
-        print(json.dumps({"ok": False, "error": str(e)}))
-        sys.exit(2)
+        out = {"ok": False, "error": str(e)}
+
+    print(json.dumps(out))
+
+if __name__ == "__main__":
+    main()

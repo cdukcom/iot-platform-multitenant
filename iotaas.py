@@ -107,6 +107,38 @@ async def gw_list_sidecar():
         return {"ok": False, "error": e.stderr or str(e)}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+    
+@app.post("/_gw_create_sidecar", include_in_schema=False)
+async def _gw_create_sidecar(body: dict):
+    # body: { tenant_id, gateway_id, name, description?, tags? (dict) }
+    try:
+        tenant_id = body["tenant_id"]
+        gateway_id = body["gateway_id"]
+        name = body["name"]
+    except KeyError as e:
+        return {"ok": False, "error": f"missing field: {e.args[0]}"}
+
+    args = [sys.executable, "-m", "gw_sidecar", "create",
+            "--tenant-id", tenant_id,
+            "--gateway-id", gateway_id,
+            "--name", name]
+
+    if body.get("description"):
+        args += ["--description", body["description"]]
+
+    # convertir tags dict -> "k=v,k2=v2"
+    if isinstance(body.get("tags"), dict) and body["tags"]:
+        tag_str = ",".join(f"{k}={v}" for k, v in body["tags"].items())
+        args += ["--tags", tag_str]
+
+    proc = subprocess.run(args, capture_output=True, text=True)
+    if proc.returncode != 0:
+        return {"ok": False, "error": proc.stderr or proc.stdout}
+
+    try:
+        return json.loads(proc.stdout)
+    except Exception:
+        return {"ok": False, "error": f"bad sidecar json: {proc.stdout}"}
 
 # 🔒 Rutas protegidas (Autenticadas)
 @app.get("/private")

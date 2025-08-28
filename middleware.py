@@ -7,24 +7,31 @@ from auth import verify_token
 logger = logging.getLogger(__name__)
 
 # ➕ rutas abiertas (sin auth)
-OPEN_PATHS = {"/", "/ping-db", "/_gw_smoke"}
+OPEN_PATHS = {
+    "/", "/ping-db",
+    "/_gw_smoke", "/_gw_list_sidecar", "/_gw_create_sidecar",
+    # opcional: docs mientras probamos
+    "/docs", "/openapi.json", "/redoc",
+    "/favicon.ico",
+}
 
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+
         # Permitir sin autenticación: rutas públicas o método OPTIONS
-        if request.method == "OPTIONS" or request.url.path in ["/", "/ping-db", "/_gw_smoke", "/_gw_list_sidecar"]:
-            # Permitimos estas rutas sin autenticación
+        if request.method in {"OPTIONS", "HEAD"} or path in OPEN_PATHS:
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization")
 
         # Log dentro del contexto de la petición
-        logger.info(f"[AUTH] {request.method} {request.url.path} - Authorization present? {bool(auth_header)}")
+        logger.info(f"[AUTH] {request.method} {path} - Authorization present? {bool(auth_header)}")
 
         if not auth_header or not auth_header.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
 
-        token = auth_header.split(" ")[1]
+        token = auth_header.split(" ", 1)[1]
         decoded_token = verify_token(token)
         if not decoded_token:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
