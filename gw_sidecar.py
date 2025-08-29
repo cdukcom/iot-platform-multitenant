@@ -1,5 +1,5 @@
 # gw_sidecar.py
-import os, json, argparse, grpc, sys
+import os, json, argparse, grpc
 from grpc_auth_interceptor import ApiKeyAuthInterceptor
 
 # Usamos el paquete oficial SOLO aquí
@@ -61,6 +61,19 @@ def create_gateway(gateway_id: str, name: str, tenant_id: str, description: str 
     stub.Create(req)
     return {"ok": True, "gateway_id": gateway_id.upper(), "tenant_id": tenant_id}
 
+def delete_gateway(gateway_id: str):
+    import re
+    gateway_id = (gateway_id or "").strip().upper()
+    if not re.fullmatch(r"[0-9A-Fa-f]{16}", gateway_id or ""):
+        return {"ok": False, "error": "gateway_id debe ser 16 hex (EUI64)"}
+
+    ch = _channel()
+    stub = gw_pb2_grpc.GatewayServiceStub(ch)
+    # En v4 el Delete recibe {id: <gateway_id>}
+    req = gw_pb2.DeleteGatewayRequest(id=gateway_id.upper())
+    stub.Delete(req, timeout=5)  # idem para List/Create
+    return {"ok": True, "gateway_id": gateway_id.upper()}
+
 def main():
     p = argparse.ArgumentParser(prog="gw_sidecar", description="Gateway sidecar (safe cmds)")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -75,6 +88,9 @@ def main():
     p_create.add_argument("--tenant-id", required=True)
     p_create.add_argument("--description", default="")
     p_create.add_argument("--tags", default="", help="k1=v1,k2=v2")
+    
+    p_delete = sub.add_parser("delete")
+    p_delete.add_argument("--gateway-id", required=True)
 
     args = p.parse_args()
 
@@ -89,8 +105,15 @@ def main():
                 description=args.description,
                 tags_str=args.tags,
             )
+        elif args.cmd == "delete":
+            out = delete_gateway(gateway_id=args.gateway_id)
         else:
             out = {"ok": False, "error": f"unknown cmd {args.cmd}"}
+    
+    except grpc.RpcError as e:
+        # Mensaje de error gRPC más claro
+        out = {"ok": False, "error": f"gRPC {e.code().name}: {e.details()}"}
+
     except Exception as e:
         out = {"ok": False, "error": str(e)}
 
