@@ -69,10 +69,20 @@ def delete_gateway(gateway_id: str):
 
     ch = _channel()
     stub = gw_pb2_grpc.GatewayServiceStub(ch)
-    # En v4 el Delete recibe {id: <gateway_id>}
-    req = gw_pb2.DeleteGatewayRequest(id=gateway_id.upper())
-    stub.Delete(req, timeout=5)  # idem para List/Create
-    return {"ok": True, "gateway_id": gateway_id.upper()}
+    req = gw_pb2.DeleteGatewayRequest(gateway_id=gateway_id)
+    
+    try:
+        stub.Delete(req, timeout=5)
+        return {"ok": True, "gateway_id": gateway_id}
+    except grpc.RpcError as e:
+        # Mapea errores típicos a mensajes útiles
+        code = e.code().name
+        detail = e.details()
+        if code == "NOT_FOUND":
+            detail = f"Gateway {gateway_id} no existe"
+        elif code == "DEADLINE_EXCEEDED":
+            detail = "Timeout al contactar ChirpStack"
+        return {"ok": False, "error": f"gRPC {code}: {detail}"}
 
 def main():
     p = argparse.ArgumentParser(prog="gw_sidecar", description="Gateway sidecar (safe cmds)")
