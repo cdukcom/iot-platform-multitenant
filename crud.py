@@ -40,12 +40,16 @@ async def create_tenant(data: TenantModel, owner_uid: str):
         )
         chirp_tenant_id = cs_resp.id
 
+        # NUEVO: asegurar/crear la Application con el mismo nombre del tenant
+        chirp_app_id = cs.ensure_application_same_as_tenant(chirp_tenant_id, composed_name)
+
         # 3) Si gRPC OK, persistimos el id de ChirpStack en Mongo
         await tenants_collection.update_one(
             {"_id": inserted_id},
             {"$set": {
                 "chirpstack_tenant_id": chirp_tenant_id,
                 "chirpstack_tenant_name": composed_name,
+                "chirpstack_app_id": chirp_app_id,
             }},
         )
 

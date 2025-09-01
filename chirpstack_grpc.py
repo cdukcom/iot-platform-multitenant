@@ -5,6 +5,8 @@ from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from chirpstack_proto.api.device import device_pb2, device_pb2_grpc
 from chirpstack_proto.api.device_profile import device_profile_pb2, device_profile_pb2_grpc
 from chirpstack_proto.api.tenant import tenant_pb2, tenant_pb2_grpc
+from chirpstack_proto.api.application import application_pb2 as app_pb2
+from chirpstack_proto.api.application import application_pb2_grpc as app_pb2_grpc
 
 # --- Helpers para nombre compuesto de tenant ---
 def _slug(s: str) -> str:
@@ -107,3 +109,38 @@ class ChirpstackGRPCClient:
         """Elimina un tenant por ID en ChirpStack (levanta excepción gRPC si falla)."""
         req = tenant_pb2.DeleteTenantRequest(id=tenant_id)
         return self.tenant_stub.Delete(req)
+    
+    def ensure_application_same_as_tenant(self, tenant_id: str, tenant_name: str) -> str:
+        """
+        Idempotente: devuelve el application_id si existe; si no, la crea con el
+        mismo nombre del tenant y devuelve su id.
+        """
+        # Obtener stub (nombre usual ApplicationServiceStub; si tu build usa otro, esto lo cubre)
+        try:
+            app_stub = app_pb2_grpc.ApplicationServiceStub(self.channel)
+        except AttributeError:
+            # Resolución flexible por si el nombre del stub difiere
+            app_stub = None
+            for attr in dir(app_pb2_grpc):
+                if attr.endswith("Stub") and "Application" in attr:
+                    app_stub = getattr(app_pb2_grpc, attr)(self.channel)
+                    break
+            if app_stub is None:
+                raise ValueError("ApplicationService no disponible en tus stubs locales.")
+
+        # 1) Listar y buscar por nombre
+        resp = app_stub.List(app_pb2.ListApplicationsRequest(limit=200, tenant_id=tenant_id))
+        for a in resp.result:
+            if a.name == tenant_name:
+                return a.id
+
+        # 2) Crear si no existe
+        creq = app_pb2.CreateApplicationRequest(
+            application=app_pb2.Application(
+                name=tenant_name,
+                description=f"App {tenant_name}",
+                tenant_id=tenant_id,
+            )
+        )
+        cresp = app_stub.Create(creq)
+        return getattr(cresp, "id", "") or getattr(cresp, "application_id", "")
