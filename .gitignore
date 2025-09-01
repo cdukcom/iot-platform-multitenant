@@ -1,6 +1,7 @@
 .env
 firebase_credentials.json
 venv/
+.venv/
 __pycache__/
 *.pyc
 *.log.DS_Store

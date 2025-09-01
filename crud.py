@@ -8,7 +8,7 @@ from models import TenantModel, UserModel, DeviceModel, AlertModel, LogModel
 from grpc import RpcError
 
 # from chirpstack_gprc import client.get_device_profile_id_by_name
-from chirpstack_grpc import ChirpstackGRPCClient
+from chirpstack_grpc import ChirpstackGRPCClient, compose_tenant_name
 
 
 # ────────────────────────────────────────────────
@@ -30,8 +30,11 @@ async def create_tenant(data: TenantModel, owner_uid: str):
     # 2) Intentar en ChirpStack (gRPC)
     try:
         cs = ChirpstackGRPCClient()
+        user_doc = await users_collection.find_one({"uid": owner_uid})
+        user_email = (user_doc.get("email") if user_doc else "") or owner_uid
+        composed_name = compose_tenant_name(user_email, tenant.get("name", ""))
         cs_resp = cs.create_tenant(
-            name=tenant.get("name", ""),
+            name=composed_name,
             description=tenant.get("description", ""),
             can_have_gateways=tenant.get("can_have_gateways", True),
         )
@@ -40,7 +43,10 @@ async def create_tenant(data: TenantModel, owner_uid: str):
         # 3) Si gRPC OK, persistimos el id de ChirpStack en Mongo
         await tenants_collection.update_one(
             {"_id": inserted_id},
-            {"$set": {"chirpstack_tenant_id": chirp_tenant_id}},
+            {"$set": {
+                "chirpstack_tenant_id": chirp_tenant_id,
+                "chirpstack_tenant_name": composed_name,
+            }},
         )
 
         return str(inserted_id)

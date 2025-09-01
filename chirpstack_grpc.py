@@ -1,9 +1,21 @@
 import os
 import grpc
+import re
 from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from chirpstack_proto.api.device import device_pb2, device_pb2_grpc
 from chirpstack_proto.api.device_profile import device_profile_pb2, device_profile_pb2_grpc
 from chirpstack_proto.api.tenant import tenant_pb2, tenant_pb2_grpc
+
+# --- Helpers para nombre compuesto de tenant ---
+def _slug(s: str) -> str:
+    s = (s or "").strip()
+    s = "".join(ch.lower() if ch.isalnum() else "_" for ch in s)
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s[:64]  # límite de seguridad
+
+def compose_tenant_name(user_email: str, community: str) -> str:
+    user_prefix = (user_email or "").split("@", 1)[0]
+    return f"{_slug(user_prefix)}_{_slug(community)}"
 
 # Obtener la API Key y el host desde variables de entorno
 CHIRPSTACK_API_KEY = os.getenv("CHIRPSTACK_API_KEY")
@@ -68,6 +80,17 @@ class ChirpstackGRPCClient:
         """Lista tenants (paginado simple)."""
         req = tenant_pb2.ListTenantsRequest(limit=limit, offset=offset, search=search)
         return self.tenant_stub.List(req)
+
+    def create_tenant_composed(self, user_email: str, community_name: str,
+                           description: str = "", can_have_gateways: bool = True):
+       """
+       Conveniencia: compone el nombre como userprefix_comunidad y crea el tenant.
+       No altera create_tenant existente.
+       """
+       name = compose_tenant_name(user_email, community_name)
+       return self.create_tenant(name=name,
+                                 description=description,
+                                 can_have_gateways=can_have_gateways)
 
     def create_tenant(self, name: str, description: str = "", can_have_gateways: bool = True):
         """Crea un tenant en ChirpStack (levanta excepción gRPC si falla)."""
