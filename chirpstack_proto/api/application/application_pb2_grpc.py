@@ -3,6 +3,8 @@
 import grpc
 import warnings
 
+from chirpstack_proto.api.application import application_pb2 as application_dot_application__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
 GRPC_VERSION = grpc.__version__
@@ -22,3 +24,2194 @@ if _version_not_supported:
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
+
+
+class ApplicationServiceStub(object):
+    """ApplicationService is the service providing API methods for managing
+    applications.
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.Create = channel.unary_unary(
+                '/api.ApplicationService/Create',
+                request_serializer=application_dot_application__pb2.CreateApplicationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.CreateApplicationResponse.FromString,
+                _registered_method=True)
+        self.Get = channel.unary_unary(
+                '/api.ApplicationService/Get',
+                request_serializer=application_dot_application__pb2.GetApplicationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetApplicationResponse.FromString,
+                _registered_method=True)
+        self.Update = channel.unary_unary(
+                '/api.ApplicationService/Update',
+                request_serializer=application_dot_application__pb2.UpdateApplicationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.Delete = channel.unary_unary(
+                '/api.ApplicationService/Delete',
+                request_serializer=application_dot_application__pb2.DeleteApplicationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.List = channel.unary_unary(
+                '/api.ApplicationService/List',
+                request_serializer=application_dot_application__pb2.ListApplicationsRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.ListApplicationsResponse.FromString,
+                _registered_method=True)
+        self.ListIntegrations = channel.unary_unary(
+                '/api.ApplicationService/ListIntegrations',
+                request_serializer=application_dot_application__pb2.ListIntegrationsRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.ListIntegrationsResponse.FromString,
+                _registered_method=True)
+        self.CreateHttpIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateHttpIntegration',
+                request_serializer=application_dot_application__pb2.CreateHttpIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetHttpIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetHttpIntegration',
+                request_serializer=application_dot_application__pb2.GetHttpIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetHttpIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateHttpIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateHttpIntegration',
+                request_serializer=application_dot_application__pb2.UpdateHttpIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteHttpIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteHttpIntegration',
+                request_serializer=application_dot_application__pb2.DeleteHttpIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateInfluxDbIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateInfluxDbIntegration',
+                request_serializer=application_dot_application__pb2.CreateInfluxDbIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetInfluxDbIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetInfluxDbIntegration',
+                request_serializer=application_dot_application__pb2.GetInfluxDbIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetInfluxDbIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateInfluxDbIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateInfluxDbIntegration',
+                request_serializer=application_dot_application__pb2.UpdateInfluxDbIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteInfluxDbIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteInfluxDbIntegration',
+                request_serializer=application_dot_application__pb2.DeleteInfluxDbIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateThingsBoardIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateThingsBoardIntegration',
+                request_serializer=application_dot_application__pb2.CreateThingsBoardIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetThingsBoardIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetThingsBoardIntegration',
+                request_serializer=application_dot_application__pb2.GetThingsBoardIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetThingsBoardIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateThingsBoardIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateThingsBoardIntegration',
+                request_serializer=application_dot_application__pb2.UpdateThingsBoardIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteThingsBoardIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteThingsBoardIntegration',
+                request_serializer=application_dot_application__pb2.DeleteThingsBoardIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateMyDevicesIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateMyDevicesIntegration',
+                request_serializer=application_dot_application__pb2.CreateMyDevicesIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetMyDevicesIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetMyDevicesIntegration',
+                request_serializer=application_dot_application__pb2.GetMyDevicesIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetMyDevicesIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateMyDevicesIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateMyDevicesIntegration',
+                request_serializer=application_dot_application__pb2.UpdateMyDevicesIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteMyDevicesIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteMyDevicesIntegration',
+                request_serializer=application_dot_application__pb2.DeleteMyDevicesIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateLoraCloudIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateLoraCloudIntegration',
+                request_serializer=application_dot_application__pb2.CreateLoraCloudIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetLoraCloudIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetLoraCloudIntegration',
+                request_serializer=application_dot_application__pb2.GetLoraCloudIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetLoraCloudIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateLoraCloudIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateLoraCloudIntegration',
+                request_serializer=application_dot_application__pb2.UpdateLoraCloudIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteLoraCloudIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteLoraCloudIntegration',
+                request_serializer=application_dot_application__pb2.DeleteLoraCloudIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateGcpPubSubIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateGcpPubSubIntegration',
+                request_serializer=application_dot_application__pb2.CreateGcpPubSubIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetGcpPubSubIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetGcpPubSubIntegration',
+                request_serializer=application_dot_application__pb2.GetGcpPubSubIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetGcpPubSubIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateGcpPubSubIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateGcpPubSubIntegration',
+                request_serializer=application_dot_application__pb2.UpdateGcpPubSubIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteGcpPubSubIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteGcpPubSubIntegration',
+                request_serializer=application_dot_application__pb2.DeleteGcpPubSubIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateAwsSnsIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateAwsSnsIntegration',
+                request_serializer=application_dot_application__pb2.CreateAwsSnsIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetAwsSnsIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetAwsSnsIntegration',
+                request_serializer=application_dot_application__pb2.GetAwsSnsIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetAwsSnsIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateAwsSnsIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateAwsSnsIntegration',
+                request_serializer=application_dot_application__pb2.UpdateAwsSnsIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteAwsSnsIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteAwsSnsIntegration',
+                request_serializer=application_dot_application__pb2.DeleteAwsSnsIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateAzureServiceBusIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateAzureServiceBusIntegration',
+                request_serializer=application_dot_application__pb2.CreateAzureServiceBusIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetAzureServiceBusIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetAzureServiceBusIntegration',
+                request_serializer=application_dot_application__pb2.GetAzureServiceBusIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetAzureServiceBusIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateAzureServiceBusIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateAzureServiceBusIntegration',
+                request_serializer=application_dot_application__pb2.UpdateAzureServiceBusIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteAzureServiceBusIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteAzureServiceBusIntegration',
+                request_serializer=application_dot_application__pb2.DeleteAzureServiceBusIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreatePilotThingsIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreatePilotThingsIntegration',
+                request_serializer=application_dot_application__pb2.CreatePilotThingsIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetPilotThingsIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetPilotThingsIntegration',
+                request_serializer=application_dot_application__pb2.GetPilotThingsIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetPilotThingsIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdatePilotThingsIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdatePilotThingsIntegration',
+                request_serializer=application_dot_application__pb2.UpdatePilotThingsIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeletePilotThingsIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeletePilotThingsIntegration',
+                request_serializer=application_dot_application__pb2.DeletePilotThingsIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.CreateIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateIftttIntegration',
+                request_serializer=application_dot_application__pb2.CreateIftttIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetIftttIntegration',
+                request_serializer=application_dot_application__pb2.GetIftttIntegrationRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GetIftttIntegrationResponse.FromString,
+                _registered_method=True)
+        self.UpdateIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateIftttIntegration',
+                request_serializer=application_dot_application__pb2.UpdateIftttIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.DeleteIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteIftttIntegration',
+                request_serializer=application_dot_application__pb2.DeleteIftttIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GenerateMqttIntegrationClientCertificate = channel.unary_unary(
+                '/api.ApplicationService/GenerateMqttIntegrationClientCertificate',
+                request_serializer=application_dot_application__pb2.GenerateMqttIntegrationClientCertificateRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.GenerateMqttIntegrationClientCertificateResponse.FromString,
+                _registered_method=True)
+        self.ListDeviceProfiles = channel.unary_unary(
+                '/api.ApplicationService/ListDeviceProfiles',
+                request_serializer=application_dot_application__pb2.ListApplicationDeviceProfilesRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.ListApplicationDeviceProfilesResponse.FromString,
+                _registered_method=True)
+        self.ListDeviceTags = channel.unary_unary(
+                '/api.ApplicationService/ListDeviceTags',
+                request_serializer=application_dot_application__pb2.ListApplicationDeviceTagsRequest.SerializeToString,
+                response_deserializer=application_dot_application__pb2.ListApplicationDeviceTagsResponse.FromString,
+                _registered_method=True)
+
+
+class ApplicationServiceServicer(object):
+    """ApplicationService is the service providing API methods for managing
+    applications.
+    """
+
+    def Create(self, request, context):
+        """Create creates the given application.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Get(self, request, context):
+        """Get the application for the given ID.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Update(self, request, context):
+        """Update updates the given application.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Delete(self, request, context):
+        """Delete the application for the given ID.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def List(self, request, context):
+        """Get the list of applications.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListIntegrations(self, request, context):
+        """List all configured integrations.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateHttpIntegration(self, request, context):
+        """Create HTTP integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetHttpIntegration(self, request, context):
+        """Get the configured HTTP integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateHttpIntegration(self, request, context):
+        """Update the HTTP integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteHttpIntegration(self, request, context):
+        """Delete the HTTP integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateInfluxDbIntegration(self, request, context):
+        """Create InfluxDb integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetInfluxDbIntegration(self, request, context):
+        """Get InfluxDb integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateInfluxDbIntegration(self, request, context):
+        """Update InfluxDb integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteInfluxDbIntegration(self, request, context):
+        """Delete InfluxDb integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateThingsBoardIntegration(self, request, context):
+        """Create ThingsBoard integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetThingsBoardIntegration(self, request, context):
+        """Get ThingsBoard integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateThingsBoardIntegration(self, request, context):
+        """Update ThingsBoard integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteThingsBoardIntegration(self, request, context):
+        """Delete ThingsBoard integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateMyDevicesIntegration(self, request, context):
+        """Create myDevices integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMyDevicesIntegration(self, request, context):
+        """Get myDevices integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateMyDevicesIntegration(self, request, context):
+        """Update myDevices integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteMyDevicesIntegration(self, request, context):
+        """Delete myDevices integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateLoraCloudIntegration(self, request, context):
+        """Create LoRaCloud integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetLoraCloudIntegration(self, request, context):
+        """Get LoRaCloud integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateLoraCloudIntegration(self, request, context):
+        """Update LoRaCloud integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteLoraCloudIntegration(self, request, context):
+        """Delete LoRaCloud integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateGcpPubSubIntegration(self, request, context):
+        """Create GCP Pub/Sub integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetGcpPubSubIntegration(self, request, context):
+        """Get GCP Pub/Sub integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateGcpPubSubIntegration(self, request, context):
+        """Update GCP Pub/Sub integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteGcpPubSubIntegration(self, request, context):
+        """Delete GCP Pub/Sub integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateAwsSnsIntegration(self, request, context):
+        """Create AWS SNS integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAwsSnsIntegration(self, request, context):
+        """Get AWS SNS integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateAwsSnsIntegration(self, request, context):
+        """Update AWS SNS integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteAwsSnsIntegration(self, request, context):
+        """Delete AWS SNS integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateAzureServiceBusIntegration(self, request, context):
+        """Create Azure Service-Bus integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetAzureServiceBusIntegration(self, request, context):
+        """Get Azure Service-Bus integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateAzureServiceBusIntegration(self, request, context):
+        """Update Azure Service-Bus integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteAzureServiceBusIntegration(self, request, context):
+        """Delete Azure Service-Bus integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreatePilotThingsIntegration(self, request, context):
+        """Create Pilot Things integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPilotThingsIntegration(self, request, context):
+        """Get Pilot Things integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdatePilotThingsIntegration(self, request, context):
+        """Update Pilot Things integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeletePilotThingsIntegration(self, request, context):
+        """Delete Pilot Things integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateIftttIntegration(self, request, context):
+        """Create IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetIftttIntegration(self, request, context):
+        """Get IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateIftttIntegration(self, request, context):
+        """Update IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteIftttIntegration(self, request, context):
+        """Delete IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GenerateMqttIntegrationClientCertificate(self, request, context):
+        """Generates application ID specific client-certificate.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListDeviceProfiles(self, request, context):
+        """List device-profiles used within the given application.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListDeviceTags(self, request, context):
+        """List device tags used within the given application.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_ApplicationServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'Create': grpc.unary_unary_rpc_method_handler(
+                    servicer.Create,
+                    request_deserializer=application_dot_application__pb2.CreateApplicationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.CreateApplicationResponse.SerializeToString,
+            ),
+            'Get': grpc.unary_unary_rpc_method_handler(
+                    servicer.Get,
+                    request_deserializer=application_dot_application__pb2.GetApplicationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetApplicationResponse.SerializeToString,
+            ),
+            'Update': grpc.unary_unary_rpc_method_handler(
+                    servicer.Update,
+                    request_deserializer=application_dot_application__pb2.UpdateApplicationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Delete': grpc.unary_unary_rpc_method_handler(
+                    servicer.Delete,
+                    request_deserializer=application_dot_application__pb2.DeleteApplicationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'List': grpc.unary_unary_rpc_method_handler(
+                    servicer.List,
+                    request_deserializer=application_dot_application__pb2.ListApplicationsRequest.FromString,
+                    response_serializer=application_dot_application__pb2.ListApplicationsResponse.SerializeToString,
+            ),
+            'ListIntegrations': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListIntegrations,
+                    request_deserializer=application_dot_application__pb2.ListIntegrationsRequest.FromString,
+                    response_serializer=application_dot_application__pb2.ListIntegrationsResponse.SerializeToString,
+            ),
+            'CreateHttpIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateHttpIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateHttpIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetHttpIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetHttpIntegration,
+                    request_deserializer=application_dot_application__pb2.GetHttpIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetHttpIntegrationResponse.SerializeToString,
+            ),
+            'UpdateHttpIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateHttpIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateHttpIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteHttpIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteHttpIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteHttpIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateInfluxDbIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateInfluxDbIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateInfluxDbIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetInfluxDbIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetInfluxDbIntegration,
+                    request_deserializer=application_dot_application__pb2.GetInfluxDbIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetInfluxDbIntegrationResponse.SerializeToString,
+            ),
+            'UpdateInfluxDbIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateInfluxDbIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateInfluxDbIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteInfluxDbIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteInfluxDbIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteInfluxDbIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateThingsBoardIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateThingsBoardIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateThingsBoardIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetThingsBoardIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetThingsBoardIntegration,
+                    request_deserializer=application_dot_application__pb2.GetThingsBoardIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetThingsBoardIntegrationResponse.SerializeToString,
+            ),
+            'UpdateThingsBoardIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateThingsBoardIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateThingsBoardIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteThingsBoardIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteThingsBoardIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteThingsBoardIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateMyDevicesIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateMyDevicesIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateMyDevicesIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetMyDevicesIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMyDevicesIntegration,
+                    request_deserializer=application_dot_application__pb2.GetMyDevicesIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetMyDevicesIntegrationResponse.SerializeToString,
+            ),
+            'UpdateMyDevicesIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateMyDevicesIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateMyDevicesIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteMyDevicesIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteMyDevicesIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteMyDevicesIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateLoraCloudIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateLoraCloudIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateLoraCloudIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetLoraCloudIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetLoraCloudIntegration,
+                    request_deserializer=application_dot_application__pb2.GetLoraCloudIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetLoraCloudIntegrationResponse.SerializeToString,
+            ),
+            'UpdateLoraCloudIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateLoraCloudIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateLoraCloudIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteLoraCloudIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteLoraCloudIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteLoraCloudIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateGcpPubSubIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateGcpPubSubIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateGcpPubSubIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetGcpPubSubIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetGcpPubSubIntegration,
+                    request_deserializer=application_dot_application__pb2.GetGcpPubSubIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetGcpPubSubIntegrationResponse.SerializeToString,
+            ),
+            'UpdateGcpPubSubIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateGcpPubSubIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateGcpPubSubIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteGcpPubSubIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteGcpPubSubIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteGcpPubSubIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateAwsSnsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateAwsSnsIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateAwsSnsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetAwsSnsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAwsSnsIntegration,
+                    request_deserializer=application_dot_application__pb2.GetAwsSnsIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetAwsSnsIntegrationResponse.SerializeToString,
+            ),
+            'UpdateAwsSnsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateAwsSnsIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateAwsSnsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteAwsSnsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteAwsSnsIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteAwsSnsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateAzureServiceBusIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateAzureServiceBusIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateAzureServiceBusIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetAzureServiceBusIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetAzureServiceBusIntegration,
+                    request_deserializer=application_dot_application__pb2.GetAzureServiceBusIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetAzureServiceBusIntegrationResponse.SerializeToString,
+            ),
+            'UpdateAzureServiceBusIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateAzureServiceBusIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateAzureServiceBusIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteAzureServiceBusIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteAzureServiceBusIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteAzureServiceBusIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreatePilotThingsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreatePilotThingsIntegration,
+                    request_deserializer=application_dot_application__pb2.CreatePilotThingsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetPilotThingsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPilotThingsIntegration,
+                    request_deserializer=application_dot_application__pb2.GetPilotThingsIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetPilotThingsIntegrationResponse.SerializeToString,
+            ),
+            'UpdatePilotThingsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdatePilotThingsIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdatePilotThingsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeletePilotThingsIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeletePilotThingsIntegration,
+                    request_deserializer=application_dot_application__pb2.DeletePilotThingsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateIftttIntegration,
+                    request_deserializer=application_dot_application__pb2.CreateIftttIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetIftttIntegration,
+                    request_deserializer=application_dot_application__pb2.GetIftttIntegrationRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GetIftttIntegrationResponse.SerializeToString,
+            ),
+            'UpdateIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateIftttIntegration,
+                    request_deserializer=application_dot_application__pb2.UpdateIftttIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteIftttIntegration,
+                    request_deserializer=application_dot_application__pb2.DeleteIftttIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GenerateMqttIntegrationClientCertificate': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateMqttIntegrationClientCertificate,
+                    request_deserializer=application_dot_application__pb2.GenerateMqttIntegrationClientCertificateRequest.FromString,
+                    response_serializer=application_dot_application__pb2.GenerateMqttIntegrationClientCertificateResponse.SerializeToString,
+            ),
+            'ListDeviceProfiles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDeviceProfiles,
+                    request_deserializer=application_dot_application__pb2.ListApplicationDeviceProfilesRequest.FromString,
+                    response_serializer=application_dot_application__pb2.ListApplicationDeviceProfilesResponse.SerializeToString,
+            ),
+            'ListDeviceTags': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListDeviceTags,
+                    request_deserializer=application_dot_application__pb2.ListApplicationDeviceTagsRequest.FromString,
+                    response_serializer=application_dot_application__pb2.ListApplicationDeviceTagsResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'api.ApplicationService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('api.ApplicationService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class ApplicationService(object):
+    """ApplicationService is the service providing API methods for managing
+    applications.
+    """
+
+    @staticmethod
+    def Create(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/Create',
+            application_dot_application__pb2.CreateApplicationRequest.SerializeToString,
+            application_dot_application__pb2.CreateApplicationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Get(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/Get',
+            application_dot_application__pb2.GetApplicationRequest.SerializeToString,
+            application_dot_application__pb2.GetApplicationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Update(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/Update',
+            application_dot_application__pb2.UpdateApplicationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Delete(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/Delete',
+            application_dot_application__pb2.DeleteApplicationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def List(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/List',
+            application_dot_application__pb2.ListApplicationsRequest.SerializeToString,
+            application_dot_application__pb2.ListApplicationsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListIntegrations(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/ListIntegrations',
+            application_dot_application__pb2.ListIntegrationsRequest.SerializeToString,
+            application_dot_application__pb2.ListIntegrationsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateHttpIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateHttpIntegration',
+            application_dot_application__pb2.CreateHttpIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetHttpIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetHttpIntegration',
+            application_dot_application__pb2.GetHttpIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetHttpIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateHttpIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateHttpIntegration',
+            application_dot_application__pb2.UpdateHttpIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteHttpIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteHttpIntegration',
+            application_dot_application__pb2.DeleteHttpIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateInfluxDbIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateInfluxDbIntegration',
+            application_dot_application__pb2.CreateInfluxDbIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetInfluxDbIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetInfluxDbIntegration',
+            application_dot_application__pb2.GetInfluxDbIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetInfluxDbIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateInfluxDbIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateInfluxDbIntegration',
+            application_dot_application__pb2.UpdateInfluxDbIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteInfluxDbIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteInfluxDbIntegration',
+            application_dot_application__pb2.DeleteInfluxDbIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateThingsBoardIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateThingsBoardIntegration',
+            application_dot_application__pb2.CreateThingsBoardIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetThingsBoardIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetThingsBoardIntegration',
+            application_dot_application__pb2.GetThingsBoardIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetThingsBoardIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateThingsBoardIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateThingsBoardIntegration',
+            application_dot_application__pb2.UpdateThingsBoardIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteThingsBoardIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteThingsBoardIntegration',
+            application_dot_application__pb2.DeleteThingsBoardIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateMyDevicesIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateMyDevicesIntegration',
+            application_dot_application__pb2.CreateMyDevicesIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetMyDevicesIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetMyDevicesIntegration',
+            application_dot_application__pb2.GetMyDevicesIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetMyDevicesIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateMyDevicesIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateMyDevicesIntegration',
+            application_dot_application__pb2.UpdateMyDevicesIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteMyDevicesIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteMyDevicesIntegration',
+            application_dot_application__pb2.DeleteMyDevicesIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateLoraCloudIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateLoraCloudIntegration',
+            application_dot_application__pb2.CreateLoraCloudIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetLoraCloudIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetLoraCloudIntegration',
+            application_dot_application__pb2.GetLoraCloudIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetLoraCloudIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateLoraCloudIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateLoraCloudIntegration',
+            application_dot_application__pb2.UpdateLoraCloudIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteLoraCloudIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteLoraCloudIntegration',
+            application_dot_application__pb2.DeleteLoraCloudIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateGcpPubSubIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateGcpPubSubIntegration',
+            application_dot_application__pb2.CreateGcpPubSubIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetGcpPubSubIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetGcpPubSubIntegration',
+            application_dot_application__pb2.GetGcpPubSubIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetGcpPubSubIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateGcpPubSubIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateGcpPubSubIntegration',
+            application_dot_application__pb2.UpdateGcpPubSubIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteGcpPubSubIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteGcpPubSubIntegration',
+            application_dot_application__pb2.DeleteGcpPubSubIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateAwsSnsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateAwsSnsIntegration',
+            application_dot_application__pb2.CreateAwsSnsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAwsSnsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetAwsSnsIntegration',
+            application_dot_application__pb2.GetAwsSnsIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetAwsSnsIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateAwsSnsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateAwsSnsIntegration',
+            application_dot_application__pb2.UpdateAwsSnsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteAwsSnsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteAwsSnsIntegration',
+            application_dot_application__pb2.DeleteAwsSnsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateAzureServiceBusIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateAzureServiceBusIntegration',
+            application_dot_application__pb2.CreateAzureServiceBusIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetAzureServiceBusIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetAzureServiceBusIntegration',
+            application_dot_application__pb2.GetAzureServiceBusIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetAzureServiceBusIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateAzureServiceBusIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateAzureServiceBusIntegration',
+            application_dot_application__pb2.UpdateAzureServiceBusIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteAzureServiceBusIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteAzureServiceBusIntegration',
+            application_dot_application__pb2.DeleteAzureServiceBusIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreatePilotThingsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreatePilotThingsIntegration',
+            application_dot_application__pb2.CreatePilotThingsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPilotThingsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetPilotThingsIntegration',
+            application_dot_application__pb2.GetPilotThingsIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetPilotThingsIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdatePilotThingsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdatePilotThingsIntegration',
+            application_dot_application__pb2.UpdatePilotThingsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeletePilotThingsIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeletePilotThingsIntegration',
+            application_dot_application__pb2.DeletePilotThingsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/CreateIftttIntegration',
+            application_dot_application__pb2.CreateIftttIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GetIftttIntegration',
+            application_dot_application__pb2.GetIftttIntegrationRequest.SerializeToString,
+            application_dot_application__pb2.GetIftttIntegrationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/UpdateIftttIntegration',
+            application_dot_application__pb2.UpdateIftttIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/DeleteIftttIntegration',
+            application_dot_application__pb2.DeleteIftttIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GenerateMqttIntegrationClientCertificate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/GenerateMqttIntegrationClientCertificate',
+            application_dot_application__pb2.GenerateMqttIntegrationClientCertificateRequest.SerializeToString,
+            application_dot_application__pb2.GenerateMqttIntegrationClientCertificateResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListDeviceProfiles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/ListDeviceProfiles',
+            application_dot_application__pb2.ListApplicationDeviceProfilesRequest.SerializeToString,
+            application_dot_application__pb2.ListApplicationDeviceProfilesResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListDeviceTags(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.ApplicationService/ListDeviceTags',
+            application_dot_application__pb2.ListApplicationDeviceTagsRequest.SerializeToString,
+            application_dot_application__pb2.ListApplicationDeviceTagsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
