@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 OPEN_PATHS = {
     "/", "/ping-db",
     "/_gw_smoke", "/_gw_list_sidecar", "/_gw_create_sidecar",
+    # --- DP templates (añadir estas) ---
+    "/_dp_smoke", "/_dp_list_sidecar", "/_dp_get_sidecar",
+    "/_dp_cache_install", "/_dp_cache_get", "/_dp_cache_refresh",
+    "/_dp_create_from_cache",
     # opcional: docs mientras probamos
     "/docs", "/openapi.json", "/redoc",
     "/favicon.ico",
