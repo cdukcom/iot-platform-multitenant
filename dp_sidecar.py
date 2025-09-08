@@ -1,5 +1,6 @@
 # dp_sidecar.py
 import os, json, argparse, grpc
+from google.protobuf.json_format import MessageToDict, ParseDict
 from grpc_auth_interceptor import ApiKeyAuthInterceptor
 
 # Paquete oficial solo aquí (como hiciste con gateways)
@@ -67,33 +68,33 @@ def get_template(name: str):
             resp = stub.List(req)
 
             match_id = None
+            match_name = None
             for it in resp.result:
+                # En 4.13.0 viene como 'device_profile_template' o directo
                 tpl_meta = getattr(it, "device_profile_template", it)
-                if getattr(tpl_meta, "name", "") == name:
+                tpl_name = getattr(tpl_meta, "name", "")
+                if tpl_name == name:
                     match_id = getattr(tpl_meta, "id", None)
+                    match_name = tpl_name
                     break
 
             if match_id:
                 got = stub.Get(dpt_pb2.GetDeviceProfileTemplateRequest(id=match_id))
                 tpl = got.device_profile_template
-                data = {
-                    "id": tpl.id,
-                    "name": tpl.name,
-                    "region": int(tpl.region),
-                    "mac_version": int(tpl.mac_version),
-                    "reg_params_revision": int(tpl.reg_params_revision),
-                    "supports_otaa": bool(tpl.supports_otaa),
-                    "supports_class_b": bool(tpl.supports_class_b),
-                    "supports_class_c": bool(tpl.supports_class_c),
-                    "rx1_delay": int(tpl.rx1_delay),
-                    "rx2_dr": int(tpl.rx2_dr),
-                    "rx2_frequency": int(tpl.rx2_frequency),
-                    "factory_preset_freqs": list(tpl.factory_preset_freqs),
-                    "max_eirp": int(tpl.max_eirp),
-                    "payload_codec_runtime": int(tpl.payload_codec_runtime),
-                    "payload_codec_script": tpl.payload_codec_script or "",
+
+                # ⚠️ Extrae el DeviceProfile anidado si existe; si no, usa el propio template
+                src_dp = getattr(tpl, "device_profile", None) or tpl
+
+                # Convierte el mensaje protobuf a dict JSON usando nombres de campo proto
+                dp_dict = MessageToDict(src_dp, preserving_proto_field_name=True)
+
+                # Devolvemos el DP "plano" como template, y metadatos del template
+                return {
+                    "ok": True,
+                    "template": dp_dict,
+                    "template_id": getattr(tpl, "id", None),
+                    "template_name": match_name or getattr(tpl, "name", None),
                 }
-                return {"ok": True, "template": data}
 
             batch = len(resp.result)
             offset += batch
@@ -104,32 +105,29 @@ def get_template(name: str):
         return {"ok": False, "error": f"Template '{name}' no encontrado"}
     except grpc.RpcError as e:
         return {"ok": False, "error": f"gRPC {e.code().name}: {e.details()}"}
+    except Exception as e:
+        # Atrapa AttributeError tipo 'rx1_delay' y similares
+        return {"ok": False, "error": str(e)}
 
 def create_dp_from_template(tenant_id: str, profile_name: str, template: dict):
     ch = _channel()
     stub = dp_grpc.DeviceProfileServiceStub(ch)
-    dp = dp_pb2.DeviceProfile(
-        name=profile_name,
-        tenant_id=tenant_id,
-        region=template["region"],
-        mac_version=template["mac_version"],
-        reg_params_revision=template["reg_params_revision"],
-        supports_otaa=template["supports_otaa"],
-        supports_class_b=template["supports_class_b"],
-        supports_class_c=template["supports_class_c"],
-        rx1_delay=template["rx1_delay"],
-        rx2_dr=template["rx2_dr"],
-        rx2_frequency=template["rx2_frequency"],
-        factory_preset_freqs=template["factory_preset_freqs"],
-        max_eirp=template["max_eirp"],
-        payload_codec_runtime=template["payload_codec_runtime"],
-        payload_codec_script=template["payload_codec_script"],
-    )
+
+    # Reconstruye un DeviceProfile desde el dict (solo campos válidos serán seteados)
+    dp = dp_pb2.DeviceProfile()
+    ParseDict(template, dp)
+
+    # Sobrescribe campos obligatorios
+    dp.name = profile_name
+    dp.tenant_id = tenant_id
+
     try:
         resp = stub.Create(dp_pb2.CreateDeviceProfileRequest(device_profile=dp))
         return {"ok": True, "device_profile_id": resp.id}
     except grpc.RpcError as e:
         return {"ok": False, "error": f"gRPC {e.code().name}: {e.details()}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 def main():
     p = argparse.ArgumentParser(prog="dp_sidecar", description="Device Profile Template sidecar")
