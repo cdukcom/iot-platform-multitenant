@@ -147,16 +147,14 @@ async def _gw_create_sidecar(body: dict):
 @app.get("/_dp_smoke", include_in_schema=False)
 async def dp_smoke():
     """
-    Verifica conectividad básica gRPC usando el cliente interno.
-    En este caso podemos hacer un 'list_device_profiles' limitado,
-    solo para validar que el canal y el API Key funcionan.
+    Verifica conectividad gRPC (API Key / canal). Usamos list_tenants para smoke.
     """
     try:
-        c = ChirpstackGRPCClient()  # el que ya usas con tus stubs locales
-        resp = c.list_device_profiles(limit=1)
+        c = ChirpstackGRPCClient()
+        resp = c.list_tenants(limit=1)
         return {
             "ok": True,
-            "checked": "device_profile_list",
+            "checked": "tenant_list",
             "total_count": getattr(resp, "total_count", None),
         }
     except Exception as e:

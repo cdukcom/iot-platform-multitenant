@@ -22,54 +22,86 @@ def list_templates(limit=50, search=""):
     ch = _channel()
     stub = dpt_grpc.DeviceProfileTemplateServiceStub(ch)
     try:
-        req = dpt_pb2.ListDeviceProfileTemplatesRequest(limit=limit, search=search or "")
-        resp = stub.List(req)
-        items = []
-        for it in resp.result:
-            # En algunas builds, 'it' es el template; en otras viene metadata y hay que hacer Get
-            name = getattr(it, "name", None) or getattr(getattr(it, "device_profile_template", None), "name", None)
-            tid  = getattr(it, "id", None)   or getattr(getattr(it, "device_profile_template", None), "id", None)
-            items.append({"id": tid, "name": name})
-        return {"ok": True, "total_count": getattr(resp, "total_count", None), "items": items}
+        items, fetched, offset = [], 0, 0
+        page_size = min(max(1, limit), 200)
+
+        while fetched < limit:
+            # 4.13.0 NO tiene 'search' en el request
+            req = dpt_pb2.ListDeviceProfileTemplatesRequest(limit=page_size, offset=offset)
+            resp = stub.List(req)
+
+            batch = 0
+            for it in resp.result:
+                tpl = getattr(it, "device_profile_template", it)
+                name = getattr(tpl, "name", None)
+                tid  = getattr(tpl, "id", None)
+                if not name or not tid:
+                    continue
+                items.append({"id": tid, "name": name})
+                batch += 1
+
+            fetched += batch
+            offset  += batch
+
+            total = getattr(resp, "total_count", None)
+            if batch == 0 or (total is not None and offset >= total):
+                break
+
+        # filtro cliente (case-insensitive)
+        if search:
+            s = search.lower()
+            items = [x for x in items if s in (x["name"] or "").lower()]
+
+        return {"ok": True, "total_count": len(items), "items": items[:limit]}
     except grpc.RpcError as e:
         return {"ok": False, "error": f"gRPC {e.code().name}: {e.details()}"}
 
 def get_template(name: str):
     ch = _channel()
     stub = dpt_grpc.DeviceProfileTemplateServiceStub(ch)
-    # 1) Buscar con List
-    lst = list_templates(limit=100, search=name)
-    if not lst.get("ok"):
-        return lst
-    match = None
-    for it in lst.get("items", []):
-        if (it.get("name") or "").strip() == name.strip():
-            match = it
-            break
-    if not match:
-        return {"ok": False, "error": f"Template '{name}' no encontrado"}
-    # 2) Traer campos completos
+
+    offset, page_size = 0, 100
     try:
-        resp = stub.Get(dpt_pb2.GetDeviceProfileTemplateRequest(id=match["id"]))
-        tpl = resp.device_profile_template
-        data = {
-            "id": tpl.id,
-            "name": tpl.name,
-            "region": int(tpl.region),
-            "mac_version": int(tpl.mac_version),
-            "reg_params_revision": int(tpl.reg_params_revision),
-            "supports_otaa": bool(tpl.supports_otaa),
-            "supports_class_b": bool(tpl.supports_class_b),
-            "supports_class_c": bool(tpl.supports_class_c),
-            "rx1_delay": int(tpl.rx1_delay),
-            "rx2_dr": int(tpl.rx2_dr),
-            "rx2_frequency": int(tpl.rx2_frequency),
-            "factory_preset_freqs": list(tpl.factory_preset_freqs),
-            "max_eirp": int(tpl.max_eirp),
-            "payload_codec_runtime": int(tpl.payload_codec_runtime),
-            "payload_codec_script": tpl.payload_codec_script or "",
-        }
-        return {"ok": True, "template": data}
+        while True:
+            req = dpt_pb2.ListDeviceProfileTemplatesRequest(limit=page_size, offset=offset)
+            resp = stub.List(req)
+
+            match_id = None
+            for it in resp.result:
+                tpl_meta = getattr(it, "device_profile_template", it)
+                if getattr(tpl_meta, "name", "") == name:
+                    match_id = getattr(tpl_meta, "id", None)
+                    break
+
+            if match_id:
+                got = stub.Get(dpt_pb2.GetDeviceProfileTemplateRequest(id=match_id))
+                tpl = got.device_profile_template
+                data = {
+                    "id": tpl.id,
+                    "name": tpl.name,
+                    "region": int(tpl.region),
+                    "mac_version": int(tpl.mac_version),
+                    "reg_params_revision": int(tpl.reg_params_revision),
+                    "supports_otaa": bool(tpl.supports_otaa),
+                    "supports_class_b": bool(tpl.supports_class_b),
+                    "supports_class_c": bool(tpl.supports_class_c),
+                    "rx1_delay": int(tpl.rx1_delay),
+                    "rx2_dr": int(tpl.rx2_dr),
+                    "rx2_frequency": int(tpl.rx2_frequency),
+                    "factory_preset_freqs": list(tpl.factory_preset_freqs),
+                    "max_eirp": int(tpl.max_eirp),
+                    "payload_codec_runtime": int(tpl.payload_codec_runtime),
+                    "payload_codec_script": tpl.payload_codec_script or "",
+                }
+                return {"ok": True, "template": data}
+
+            batch = len(resp.result)
+            offset += batch
+            total = getattr(resp, "total_count", None)
+            if batch == 0 or (total is not None and offset >= total):
+                break
+
+        return {"ok": False, "error": f"Template '{name}' no encontrado"}
     except grpc.RpcError as e:
         return {"ok": False, "error": f"gRPC {e.code().name}: {e.details()}"}
 
