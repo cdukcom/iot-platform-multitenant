@@ -242,7 +242,7 @@ async def _dp_cache_refresh(body: dict = Body(...)):
     import subprocess, sys, json
     try:
         proc = subprocess.run(
-            [sys.executable, "dp_sidecar", "get", "--name", name],
+            [sys.executable, "-m", "dp_sidecar", "get", "--name", name],
             capture_output=True, text=True, check=True
         )
         out = json.loads(proc.stdout or "{}")
@@ -282,7 +282,7 @@ async def _dp_create_from_cache(body: dict = Body(...)):
     try:
         proc = subprocess.run(
             [
-                sys.executable, "dp_sidecar", "create-from-template",
+                sys.executable, "-m", "dp_sidecar", "create-from-template",
                 "--tenant-id", tenant_id,
                 "--profile-name", profile_name,
                 "--template-json", json.dumps(template),
