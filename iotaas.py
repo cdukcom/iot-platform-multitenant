@@ -169,7 +169,7 @@ async def dp_list_sidecar(limit: int = 5, search: str = ""):
     import subprocess, sys, json
     try:
         proc = subprocess.run(
-            [sys.executable, "dp_sidecar", "list",
+            [sys.executable, "-m", "dp_sidecar", "list",
              "--limit", str(limit), "--search", search],
             capture_output=True, text=True, check=True
         )
@@ -189,7 +189,7 @@ async def dp_get_sidecar(name: str):
     import subprocess, sys, json
     try:
         proc = subprocess.run(
-            [sys.executable, "dp_sidecar", "get", "--name", name],
+            [sys.executable, "-m", "dp_sidecar", "get", "--name", name],
             capture_output=True, text=True, check=True
         )
         return json.loads(proc.stdout or "{}")
@@ -215,7 +215,7 @@ async def _dp_cache_get(name: str):
     import subprocess, sys, json
     try:
         proc = subprocess.run(
-            [sys.executable, "dp_sidecar", "get", "--name", name],
+            [sys.executable, "-m", "dp_sidecar", "get", "--name", name],
             capture_output=True, text=True, check=True
         )
         out = json.loads(proc.stdout or "{}")
