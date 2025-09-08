@@ -16,7 +16,7 @@ from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from datetime import datetime, timezone
 
 # 📦 Módulos locales
-from db import tenants_collection, devicekeys_collection, users_collection, devices_collection
+from db import tenants_collection, devicekeys_collection, users_collection, devices_collection, dp_templates_cache_collection
 from middleware import FirebaseAuthMiddleware
 from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel, DeviceModel, AlertModel, UserRegisterModel
@@ -83,7 +83,8 @@ async def ping_db():
     except Exception as e:
         return {"status": "error", "details": str(e)}
     
-# 🧪 Smoke gRPC (sin chirpstack_api para evitar conflictos de proto)
+# ------ PRUEBAS SMOKE PARA VERIFICACION MANUAL ------    
+# SMOKE GATEWAY
 @app.get("/_gw_smoke", include_in_schema=False)
 async def gw_smoke():
     try:
@@ -142,7 +143,160 @@ async def _gw_create_sidecar(body: dict):
     except Exception:
         return {"ok": False, "error": f"bad sidecar json: {proc.stdout}"}
 
+# SMOKE DEVICE PROFILE TEMPLATE
+@app.get("/_dp_smoke", include_in_schema=False)
+async def dp_smoke():
+    """
+    Verifica conectividad básica gRPC usando el cliente interno.
+    En este caso podemos hacer un 'list_device_profiles' limitado,
+    solo para validar que el canal y el API Key funcionan.
+    """
+    try:
+        c = ChirpstackGRPCClient()  # el que ya usas con tus stubs locales
+        resp = c.list_device_profiles(limit=1)
+        return {
+            "ok": True,
+            "checked": "device_profile_list",
+            "total_count": getattr(resp, "total_count", None),
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.get("/_dp_list_sidecar", include_in_schema=False)
+async def dp_list_sidecar(limit: int = 5, search: str = ""):
+    """
+    Invoca al dp_sidecar en modo 'list' para ver templates disponibles.
+    """
+    import subprocess, sys, json
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "dp_sidecar", "list",
+             "--limit", str(limit), "--search", search],
+            capture_output=True, text=True, check=True
+        )
+        return json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.get("/_dp_get_sidecar", include_in_schema=False)
+async def dp_get_sidecar(name: str):
+    """
+    Invoca al dp_sidecar en modo 'get' para traer un template completo.
+    Ejemplo: /_dp_get_sidecar?name=LBM01
+    """
+    import subprocess, sys, json
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "dp_sidecar", "get", "--name", name],
+            capture_output=True, text=True, check=True
+        )
+        return json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/_dp_cache_install", include_in_schema=False)
+async def _dp_cache_install():
+    """Crea índice único en la colección dp_templates_cache."""
+    await dp_templates_cache_collection.create_index("name", unique=True)
+    return {"ok": True, "index": "name_unique"}
+
+@app.get("/_dp_cache_get", include_in_schema=False)
+async def _dp_cache_get(name: str):
+    """Busca en Mongo, si no existe pide al sidecar y guarda snapshot."""
+    from datetime import datetime, timezone
+    doc = await dp_templates_cache_collection.find_one({"name": name})
+    if doc:
+        return {"ok": True, "source": "cache", "template": doc["template"], "updated_at": doc.get("updated_at")}
+
+    import subprocess, sys, json
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "dp_sidecar", "get", "--name", name],
+            capture_output=True, text=True, check=True
+        )
+        out = json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
+    if not out.get("ok"):
+        return out
+
+    now = datetime.now(timezone.utc).isoformat()
+    tpl = out["template"]; tpl["cached_from"] = "chirpstack"
+    await dp_templates_cache_collection.update_one(
+        {"name": name},
+        {"$set": {"name": name, "template": tpl, "updated_at": now}},
+        upsert=True
+    )
+    return {"ok": True, "source": "chirpstack", "template": tpl, "updated_at": now}
+
+@app.post("/_dp_cache_refresh", include_in_schema=False)
+async def _dp_cache_refresh(body: dict = Body(...)):
+    """Fuerza relectura desde ChirpStack y refresca la caché."""
+    name = body.get("name")
+    if not name:
+        return {"ok": False, "error": "missing field: name"}
+    import subprocess, sys, json
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "dp_sidecar", "get", "--name", name],
+            capture_output=True, text=True, check=True
+        )
+        out = json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
+    if not out.get("ok"):
+        return out
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    tpl = out["template"]; tpl["cached_from"] = "chirpstack"
+    await dp_templates_cache_collection.update_one(
+        {"name": name},
+        {"$set": {"name": name, "template": tpl, "updated_at": now}},
+        upsert=True
+    )
+    return {"ok": True, "source": "chirpstack", "template": tpl, "updated_at": now}
+
+@app.post("/_dp_create_from_cache", include_in_schema=False)
+async def _dp_create_from_cache(body: dict = Body(...)):
+    """
+    body = { "tenant_id": "...", "profile_name": "LBM01 Profile", "template_name": "LBM01" }
+    Usa el snapshot de Mongo para crear el Device Profile en ChirpStack.
+    """
+    try:
+        tenant_id = body["tenant_id"]; profile_name = body["profile_name"]; template_name = body["template_name"]
+    except KeyError as e:
+        return {"ok": False, "error": f"missing field: {e.args[0]}"}
+
+    doc = await dp_templates_cache_collection.find_one({"name": template_name})
+    if not doc:
+        return {"ok": False, "error": f"Template '{template_name}' no está en caché. Llama primero /_dp_cache_get?name={template_name}"}
+
+    template = doc["template"]
+
+    import subprocess, sys, json
+    try:
+        proc = subprocess.run(
+            [
+                sys.executable, "-m", "dp_sidecar", "create-from-template",
+                "--tenant-id", tenant_id,
+                "--profile-name", profile_name,
+                "--template-json", json.dumps(template),
+            ],
+            capture_output=True, text=True, check=True
+        )
+        return json.loads(proc.stdout or "{}")
+    except subprocess.CalledProcessError as e:
+        return {"ok": False, "error": e.stderr or str(e)}
+
 # 🔒 Rutas protegidas (Autenticadas)
+
 @app.get("/private")
 async def private(request: Request):
     user = request.state.user
