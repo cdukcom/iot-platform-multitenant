@@ -115,7 +115,7 @@ def create_dp_from_template(tenant_id: str, profile_name: str, template: dict):
 
     # Reconstruye un DeviceProfile desde el dict (solo campos válidos serán seteados)
     dp = dp_pb2.DeviceProfile()
-    ParseDict(template, dp)
+    ParseDict(template, dp, ignore_unknown_fields=True)
 
     # Sobrescribe campos obligatorios
     dp.name = profile_name
