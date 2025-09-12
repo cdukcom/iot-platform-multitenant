@@ -308,6 +308,39 @@ async def _dp_create_from_cache(body: dict = Body(...)):
     except subprocess.CalledProcessError as e:
         return {"ok": False, "error": e.stderr or str(e)}
 
+# SMOKE CREACION SENSORES
+@app.post("/_dev_smoke_create", include_in_schema=False)
+async def _dev_smoke_create(body: dict = Body(...)):
+    """
+    body = { tenant_id (Mongo), dev_eui (16 hex), name, type }
+    - type debe coincidir con el nombre del Device Profile en ChirpStack (p.ej. "panic_button" o "dp-se-lbm01")
+    """
+    from models import DeviceModel
+    try:
+        tenant_id = body["tenant_id"]
+        dev_eui = body["dev_eui"].strip().upper()
+        name    = body.get("name", "smoke-device")
+        devtype = body.get("type", "panic_button")  # coincide con DP
+    except KeyError as e:
+        return {"ok": False, "error": f"missing field: {e.args[0]}"}
+
+    data = {
+        "tenant_id": tenant_id,
+        "dev_eui": dev_eui,
+        "name": name,
+        "type": devtype,
+        "status": "active",
+        "location": body.get("location", "")
+    }
+
+    try:
+        device_id = await register_device(DeviceModel(**data))
+        return {"ok": True, "device_id": device_id, "dev_eui": dev_eui, "type": devtype}
+    except ValueError as e:
+        return {"ok": False, "error": str(e)}
+    except Exception as e:
+        return {"ok": False, "error": f"unexpected: {e}"}
+
 # 🔒 Rutas protegidas (Autenticadas)
 
 @app.get("/private")
