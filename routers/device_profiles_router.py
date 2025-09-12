@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Body, Depends
-from auth import verify_firebase_token
+from auth import verify_token as verify_firebase_token
 from crud import upsert_device_profile_from_template_name
 
 router = APIRouter(prefix="/device-profiles", tags=["device-profiles"])
