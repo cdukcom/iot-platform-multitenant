@@ -10,17 +10,19 @@ from fastapi import FastAPI, Request, Body, Query, Depends, HTTPException, APIRo
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from bson import ObjectId
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from crud import delete_tenant_by_id
 from grpc_auth_interceptor import ApiKeyAuthInterceptor
 from datetime import datetime, timezone
 
 # 📦 Módulos locales
-from db import tenants_collection, devicekeys_collection, users_collection, devices_collection, dp_templates_cache_collection
+from db import tenants_collection, devicekeys_collection, users_collection, devices_collection, dp_templates_cache_collection, device_profiles_collection
 from middleware import FirebaseAuthMiddleware
 from crud import create_tenant, register_device, list_devices_by_tenant, trigger_alert
 from models import TenantModel, DeviceModel, AlertModel, UserRegisterModel
 from chirpstack_grpc import ChirpstackGRPCClient
+from routers.device_profiles_router import router as dp_router
+
 
 #debug encontrar error silencioso
 print("[DEBUG] Iniciando iotaas.py")
@@ -41,6 +43,18 @@ async def lifespan(app: FastAPI):
         while True:
             await asyncio.sleep(60)
     asyncio.create_task(dummy_keepalive())
+
+    # 👉 Asegura índice único (tenant_id, model)
+    try:
+        await device_profiles_collection.create_index(
+            [("tenant_id", ASCENDING), ("model", ASCENDING)],
+            name="tenant_model_unique",
+            unique=True,
+        )
+        print("[BOOT] device_profiles index OK")
+    except Exception as e:
+        print(f"[BOOT] device_profiles index ERROR: {e}")
+
     yield  # Aquí continúa el ciclo de vida normal de FastAPI
 
 #debug error silencioso railway
@@ -48,6 +62,7 @@ print("[DEBUG] yield ejecutado en lifespan")
 
 # 🚀 Inicializar la aplicación
 app = FastAPI(lifespan=lifespan)
+app.include_router(dp_router)
 
 #debug detección error silencioso.
 print("[DEBUG] FastAPI inicializada")

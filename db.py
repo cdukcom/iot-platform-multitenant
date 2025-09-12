@@ -1,3 +1,4 @@
+#db.py motor de conexión con la base de datos en Mongo
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 
@@ -19,3 +20,4 @@ alerts_collection = db["alerts"]
 logs_collection = db["logs"]
 devicekeys_collection = db["devicekeys"]
 dp_templates_cache_collection = db["dp_templates_cache"]
+device_profiles_collection = db["device_profiles"]
