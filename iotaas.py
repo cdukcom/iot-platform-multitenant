@@ -312,34 +312,98 @@ async def _dp_create_from_cache(body: dict = Body(...)):
 @app.post("/_dev_smoke_create", include_in_schema=False)
 async def _dev_smoke_create(body: dict = Body(...)):
     """
-    body = { tenant_id (Mongo), dev_eui (16 hex), name, type }
-    - type debe coincidir con el nombre del Device Profile en ChirpStack (p.ej. "panic_button" o "dp-se-lbm01")
+    body = {
+      "tenant_id": "<Mongo _id del tenant>",
+      "dev_eui": "16 HEX",
+      "name": "opcional",
+      "profile_name": "nombre del Device Profile en ChirpStack"   # p.ej. "dp-se-lbm01"
+      # (alias) puedes mandar "type" en lugar de "profile_name"
+      # "location": "...", "description": "..."  (opcionales)
+    }
     """
-    from models import DeviceModel
+    import re
+    from bson import ObjectId
+    from datetime import datetime, timezone
+
     try:
         tenant_id = body["tenant_id"]
-        dev_eui = body["dev_eui"].strip().upper()
-        name    = body.get("name", "smoke-device")
-        devtype = body.get("type", "panic_button")  # coincide con DP
+        dev_eui = (body["dev_eui"] or "").strip().upper()
+        name = (body.get("name") or "smoke-device").strip()
+        profile_name = (body.get("profile_name") or body.get("type") or "").strip()
     except KeyError as e:
         return {"ok": False, "error": f"missing field: {e.args[0]}"}
 
-    data = {
-        "tenant_id": tenant_id,
-        "dev_eui": dev_eui,
-        "name": name,
-        "type": devtype,
-        "status": "active",
-        "location": body.get("location", "")
-    }
+    if not re.fullmatch(r"[0-9A-F]{16}", dev_eui):
+        return {"ok": False, "error": "dev_eui debe ser 16 hex (0-9, A-F)"}
+    if not profile_name:
+        return {"ok": False, "error": "profile_name (o type) requerido"}
+
+    # ── Tenant en Mongo
+    try:
+        oid = ObjectId(tenant_id)
+    except Exception:
+        return {"ok": False, "error": "tenant_id inválido"}
+
+    tenant = await tenants_collection.find_one({"_id": oid})
+    if not tenant:
+        return {"ok": False, "error": "Tenant no encontrado"}
 
     try:
-        device_id = await register_device(DeviceModel(**data))
-        return {"ok": True, "device_id": device_id, "dev_eui": dev_eui, "type": devtype}
-    except ValueError as e:
-        return {"ok": False, "error": str(e)}
+        cs = ChirpstackGRPCClient()
+
+        tenant_cs_id = tenant.get("chirpstack_tenant_id")
+        if not tenant_cs_id:
+            return {"ok": False, "error": "Tenant sin chirpstack_tenant_id"}
+
+        # asegurar application_id para el tenant (por si faltaba en docs viejos)
+        app_id = tenant.get("chirpstack_app_id")
+        if not app_id:
+            # usa el nombre conocido del tenant en ChirpStack o el name local
+            composed_name = tenant.get("chirpstack_tenant_name") or tenant.get("name") or "default-app"
+            app_id = cs.ensure_application_same_as_tenant(tenant_cs_id, composed_name)
+            await tenants_collection.update_one({"_id": oid}, {"$set": {"chirpstack_app_id": app_id}})
+
+        # resolver id del Device Profile por nombre
+        profile_id = cs.get_device_profile_id_by_name(profile_name, tenant_cs_id)
+
+        # crear device en ChirpStack
+        cs.create_device(
+            dev_eui=dev_eui,
+            name=name,
+            description=body.get("description", ""),
+            application_id=app_id,
+            device_profile_id=profile_id,
+        )
+
+        # reflejar doc mínimo en Mongo (marcado como smoke)
+        doc = {
+            "tenant_id": tenant_id,
+            "dev_eui": dev_eui,
+            "name": name,
+            "type": profile_name,  # guardamos el DP como “type” en smoke
+            "status": "active",
+            "location": body.get("location", ""),
+            "created_at": datetime.now(timezone.utc),
+            "meta": {
+                "smoke": True,
+                "chirpstack_tenant_id": tenant_cs_id,
+                "chirpstack_app_id": app_id,
+                "device_profile_name": profile_name,
+                "device_profile_id": profile_id,
+            },
+        }
+        ins = await devices_collection.insert_one(doc)
+
+        return {
+            "ok": True,
+            "device_id": str(ins.inserted_id),
+            "dev_eui": dev_eui,
+            "profile_name": profile_name
+        }
+
     except Exception as e:
-        return {"ok": False, "error": f"unexpected: {e}"}
+        return {"ok": False, "error": str(e)}
+
 
 # 🔒 Rutas protegidas (Autenticadas)
 
