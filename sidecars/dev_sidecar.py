@@ -2,8 +2,7 @@
 import os, sys, json, argparse
 import grpc
 from google.protobuf import empty_pb2
-from chirpstack_proto.api import device_pb2_grpc, device_pb2
-from chirpstack_proto.api import device_keys_pb2_grpc, device_keys_pb2
+from chirpstack_api.api import device_pb2, device_pb2_grpc
 
 # --- Auth interceptor (igual patrón que tus otros sidecars)
 class AuthInterceptor(grpc.UnaryUnaryClientInterceptor, grpc.UnaryStreamClientInterceptor):
@@ -61,7 +60,7 @@ def cmd_list(args):
 def cmd_create(args):
     ch = make_channel(args.addr, args.insecure, args.token)
     dev_stub  = device_pb2_grpc.DeviceServiceStub(ch)
-    keys_stub = device_keys_pb2_grpc.DeviceKeysServiceStub(ch)
+    keys_stub = device_pb2_grpc.DeviceKeysServiceStub(ch)
 
     device = device_pb2.Device(
         dev_eui=args.dev_eui.upper(),
@@ -80,13 +79,13 @@ def cmd_create(args):
 
     if not args.no_keys:
         try:
-            dk = device_keys_pb2.DeviceKeys(
+            dk = device_pb2.DeviceKeys(
                 dev_eui=args.dev_eui.upper(),
                 app_key=(args.app_key or "").upper(),
                 nwk_key=((args.nwk_key or args.app_key) or "").upper(),
                 join_eui=(args.join_eui or "0000000000000000").upper(),
             )
-            _ = keys_stub.Create(device_keys_pb2.CreateDeviceKeysRequest(device_keys=dk))
+            _ = keys_stub.Create(device_pb2.CreateDeviceKeysRequest(device_keys=dk))
         except grpc.RpcError as e:
             catch_grpc(e)
 
