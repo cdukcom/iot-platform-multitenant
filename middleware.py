@@ -17,6 +17,7 @@ OPEN_PATHS = {
     "/_dp_create_from_cache", 
     # --- Sensores ---
     "/_dev_smoke_create",
+    "/_dev_list_sidecar",
     # opcional: docs mientras probamos
     "/docs", "/openapi.json", "/redoc",
     "/favicon.ico",
