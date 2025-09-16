@@ -1,3 +1,5 @@
+# iotass/routers/smoke/devices.py
+
 from fastapi import APIRouter, Body, Query
 from bson import ObjectId
 from datetime import datetime, timezone
@@ -93,94 +95,103 @@ async def _dev_smoke_create(body: dict = Body(...)):
     if not tenant:
         return {"ok": False, "error": "Tenant no encontrado"}
 
-    cs = ChirpstackGRPCClient()  # SOLO lecturas/ensure; la creación va por sidecar
-
-    tenant_cs_id = tenant.get("chirpstack_tenant_id")
-    if not tenant_cs_id:
-        return {"ok": False, "error": "Tenant sin chirpstack_tenant_id"}
-
-    app_id = tenant.get("chirpstack_app_id")
-    if not app_id:
-        composed = tenant.get("chirpstack_tenant_name") or tenant.get("name") or "default-app"
-        # crea/asegura app en ChirpStack (método ya probado en tu client)
-        app_id = cs.ensure_application_same_as_tenant(tenant_cs_id, composed)
-        await tenants_collection.update_one({"_id": oid}, {"$set": {"chirpstack_app_id": app_id}})
-
-    # Busca ID del Device Profile por nombre (método ya probado)
-    profile_id = cs.get_device_profile_id_by_name(profile, tenant_cs_id)
-
-    # -------- Build args para sidecar CREATE --------
-    args = [sys.executable, "-m", "sidecars.dev_sidecar", "create",
-            "--application-id", app_id,
-            "--device-profile-id", profile_id,
-            "--dev-eui", dev_eui,
-            "--name", name]
-
-    if body.get("description"):
-        args += ["--description", body["description"]]
-
-    # tags dict -> "k=v,k2=v2"
-    if isinstance(body.get("tags"), dict) and body["tags"]:
-        tag_str = ",".join(f"{k}={v}" for k, v in body["tags"].items())
-        args += ["--tags", tag_str]
-
-    no_keys = bool(body.get("no_keys"))
-    if no_keys:
-        args += ["--no-keys"]
-    else:
-        app_key = (body.get("app_key") or "").strip()
-        if not re.fullmatch(r"[0-9A-Fa-f]{32}", app_key):
-            return {"ok": False, "error": "app_key requerido (32 hex) si no usas no_keys"}
-        args += ["--app-key", app_key]
-        nwk_key = (body.get("nwk_key") or "").strip()
-        if nwk_key:
-            if not re.fullmatch(r"[0-9A-Fa-f]{32}", nwk_key):
-                return {"ok": False, "error": "nwk_key inválido (32 hex)"}
-            args += ["--nwk-key", nwk_key]
-        join_eui = (body.get("join_eui") or "").strip()
-        if join_eui:
-            if not re.fullmatch(r"[0-9A-Fa-f]{16}", join_eui):
-                return {"ok": False, "error": "join_eui inválido (16 hex)"}
-            args += ["--join-eui", join_eui]
-
-    # -------- Invocar sidecar --------
     try:
-        proc = subprocess.run(args, capture_output=True, text=True, check=True, env=_sidecar_env())
-        out = json.loads(proc.stdout or "{}")
-    except subprocess.CalledProcessError as e:
-        raw = (e.stdout or e.stderr or "").strip()
+        cs = ChirpstackGRPCClient()  # SOLO lecturas/ensure; la creación va por sidecar
+
+        tenant_cs_id = tenant.get("chirpstack_tenant_id")
+        if not tenant_cs_id:
+            return {"ok": False, "error": "Tenant sin chirpstack_tenant_id"}
+
+        app_id = tenant.get("chirpstack_app_id")
+        if not app_id:
+            composed = tenant.get("chirpstack_tenant_name") or tenant.get("name") or "default-app"
+            app_id = cs.ensure_application_same_as_tenant(tenant_cs_id, composed)
+            await tenants_collection.update_one({"_id": oid}, {"$set": {"chirpstack_app_id": app_id}})
+
+        # Busca ID del Device Profile por nombre (método ya probado)
+        profile_id = cs.get_device_profile_id_by_name(profile, tenant_cs_id)
+        if not profile_id:
+            return {"ok": False, "error": f"Device Profile '{profile}' no existe en tenant {tenant_cs_id}"}
+
+        # -------- Build args para sidecar CREATE --------
+        args = [sys.executable, "-m", "sidecars.dev_sidecar", "create",
+                "--application-id", app_id,
+                "--device-profile-id", profile_id,
+                "--dev-eui", dev_eui,
+                "--name", name]
+
+        if body.get("description"):
+            args += ["--description", body["description"]]
+
+        # tags dict -> "k=v,k2=v2"
+        if isinstance(body.get("tags"), dict) and body["tags"]:
+            tag_str = ",".join(f"{k}={v}" for k, v in body["tags"].items())
+            args += ["--tags", tag_str]
+
+        no_keys = bool(body.get("no_keys"))
+        if no_keys:
+            args += ["--no-keys"]
+        else:
+            app_key = (body.get("app_key") or "").strip()
+            if not re.fullmatch(r"[0-9A-Fa-f]{32}", app_key):
+                return {"ok": False, "error": "app_key requerido (32 hex) si no usas no_keys"}
+            args += ["--app-key", app_key]
+            
+            nwk_key = (body.get("nwk_key") or "").strip()
+            if nwk_key:
+                if not re.fullmatch(r"[0-9A-Fa-f]{32}", nwk_key):
+                    return {"ok": False, "error": "nwk_key inválido (32 hex)"}
+                args += ["--nwk-key", nwk_key]
+            
+            join_eui = (body.get("join_eui") or "").strip()
+            if join_eui:
+                if not re.fullmatch(r"[0-9A-Fa-f]{16}", join_eui):
+                    return {"ok": False, "error": "join_eui inválido (16 hex)"}
+                args += ["--join-eui", join_eui]
+
+        # -------- Invocar sidecar --------
         try:
-            out = json.loads(raw or "{}")
-        except Exception:
-            out = {"ok": False, "error": raw or "sidecar failed"}
-        out["cmd"] = args            # ← añade el comando ejecutado
-        return out
+            proc = subprocess.run(args, capture_output=True, text=True, check=True, env=_sidecar_env())
+            out = json.loads(proc.stdout or "{}")
+        except subprocess.CalledProcessError as e:
+            raw = (e.stdout or e.stderr or "").strip()
+            try:
+                out = json.loads(raw or "{}")
+            except Exception:
+                out = {"ok": False, "error": raw or "sidecar failed"}
+            out["cmd"] = args
+            return out
+
+        if not out.get("ok"):
+            return out  # el sidecar ya trae {"ok":False,"error":...}
+
+        # -------- Persistir en Mongo si Create fue OK --------
+        ins = await devices_collection.insert_one({
+            "tenant_id": tenant_id,
+            "dev_eui": dev_eui,
+            "name": name,
+            "type": profile,
+            "status": "active",
+            "location": body.get("location", ""),
+            "created_at": datetime.now(timezone.utc),
+            "meta": {
+                "smoke": True,
+                "chirpstack_tenant_id": tenant_cs_id,
+                "chirpstack_app_id": app_id,
+                "device_profile_name": profile,
+                "device_profile_id": profile_id,
+                "sidecar_result": out,
+            },
+        })
+
+        return {
+            "ok": True,
+            "device_id": str(ins.inserted_id),
+            "dev_eui": dev_eui,
+            "profile_name": profile,
+            "application_id": app_id,
+        }
+
     except Exception as e:
-        return {"ok": False, "error": str(e)}
-
-    # -------- Persistir en Mongo si Create fue OK --------
-    ins = await devices_collection.insert_one({
-        "tenant_id": tenant_id,
-        "dev_eui": dev_eui,
-        "name": name,
-        "type": profile,
-        "status": "active",
-        "location": body.get("location", ""),
-        "created_at": datetime.now(timezone.utc),
-        "meta": {
-            "smoke": True,
-            "chirpstack_tenant_id": tenant_cs_id,
-            "chirpstack_app_id": app_id,
-            "device_profile_name": profile,
-            "device_profile_id": profile_id,
-            "sidecar_result": out,  # guardamos eco mínimo del sidecar (útil para auditoría)
-        },
-    })
-
-    return {
-        "ok": True,
-        "device_id": str(ins.inserted_id),
-        "dev_eui": dev_eui,
-        "profile_name": profile,
-        "application_id": app_id,
-    }
+        # ⛑️ Captura cualquier error previo al sidecar y devuélvelo en JSON
+        return {"ok": False, "stage": "pre-sidecar", "error": str(e)}
