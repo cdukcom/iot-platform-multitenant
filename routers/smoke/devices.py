@@ -1,10 +1,20 @@
 from fastapi import APIRouter, Body, Query
 from bson import ObjectId
 from datetime import datetime, timezone
-import subprocess, sys, json, re
+import subprocess, sys, json, re, os
 
 from db import tenants_collection, devices_collection
 from chirpstack_grpc import ChirpstackGRPCClient
+
+def _sidecar_env():
+    env = os.environ.copy()
+    # Asegura que el intérprete del subproceso resuelva paquetes desde el root del proyecto
+    # (en Railway normalmente el working dir ya es /app; "." funciona también localmente)
+    env.setdefault("PYTHONPATH", ".")
+    # Si quieres más traza gRPC en caso de error, descomenta:
+    # env["GRPC_VERBOSITY"] = "DEBUG"
+    # env["GRPC_TRACE"] = "http,call_error,op_failure"
+    return env
 
 router = APIRouter()
 
@@ -19,19 +29,22 @@ async def _dev_list_sidecar(
     Lista devices de una Application en ChirpStack vía sidecar.
     """
     try:
+        args = [sys.executable, "-m", "sidecars.dev_sidecar", "list",
+                "--application-id", application_id,
+                "--limit", str(limit), "--offset", str(offset), "--search", search]
         proc = subprocess.run(
-            [sys.executable, "-m", "iotaas.sidecars.dev_sidecar", "list",
-             "--application-id", application_id,
-             "--limit", str(limit), "--offset", str(offset), "--search", search],
-            capture_output=True, text=True, check=True
+            args, capture_output=True, text=True, check=True, env=_sidecar_env()
         )
         return json.loads(proc.stdout or "{}")
     except subprocess.CalledProcessError as e:
-        # El sidecar ya imprime JSON de error
+        # ← aquí añadimos el comando real para depurar
+        raw = (e.stdout or e.stderr or "").strip()
         try:
-            return json.loads(e.stdout or e.stderr or "{}")
+            out = json.loads(raw or "{}")
         except Exception:
-            return {"ok": False, "error": e.stderr or e.stdout or str(e)}
+            out = {"ok": False, "error": raw or "sidecar failed"}
+        out["cmd"] = args
+        return out
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -97,7 +110,7 @@ async def _dev_smoke_create(body: dict = Body(...)):
     profile_id = cs.get_device_profile_id_by_name(profile, tenant_cs_id)
 
     # -------- Build args para sidecar CREATE --------
-    args = [sys.executable, "-m", "iotaas.sidecars.dev_sidecar", "create",
+    args = [sys.executable, "-m", "sidecars.dev_sidecar", "create",
             "--application-id", app_id,
             "--device-profile-id", profile_id,
             "--dev-eui", dev_eui,
@@ -132,18 +145,18 @@ async def _dev_smoke_create(body: dict = Body(...)):
 
     # -------- Invocar sidecar --------
     try:
-        proc = subprocess.run(args, capture_output=True, text=True, check=True)
+        proc = subprocess.run(args, capture_output=True, text=True, check=True, env=_sidecar_env())
         out = json.loads(proc.stdout or "{}")
     except subprocess.CalledProcessError as e:
+        raw = (e.stdout or e.stderr or "").strip()
         try:
-            out = json.loads(e.stdout or e.stderr or "{}")
+            out = json.loads(raw or "{}")
         except Exception:
-            return {"ok": False, "error": e.stderr or e.stdout or str(e)}
+            out = {"ok": False, "error": raw or "sidecar failed"}
+        out["cmd"] = args            # ← añade el comando ejecutado
+        return out
     except Exception as e:
         return {"ok": False, "error": str(e)}
-
-    if not out.get("ok"):
-        return out  # el sidecar ya trae {"ok":False,"error":...}
 
     # -------- Persistir en Mongo si Create fue OK --------
     ins = await devices_collection.insert_one({
